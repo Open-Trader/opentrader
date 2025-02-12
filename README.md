@@ -61,6 +61,14 @@ Thank you for your support!
 
 Get started with OpenTrader in just a few steps. Follow this quick guide to install, configure, and run your crypto trading bot.
 
+
+## Requirements
+
+1. Node.js v22.12 or higher
+2. PNPM v9.15 or higher
+3. Moonrepo installed (moon --version to check)
+4. Docker (optional)
+
 ## Installation
 
 1. Install OpenTrader globally using npm:
