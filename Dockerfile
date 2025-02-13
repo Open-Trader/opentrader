@@ -1,9 +1,13 @@
 #### BASE
-FROM node:latest AS base
+FROM node:lts-alpine3.17 AS base
+
+ENV MOON_TOOLCHAIN_FORCE_GLOBALS=true
+
 WORKDIR /app
 
 # Install moon binary
-RUN npm install -g @moonrepo/cli
+RUN npm install -g @moonrepo/cli@1.28.3
+RUN npm install -g pnpm
 
 #### SKELETON
 FROM base AS skeleton
@@ -12,7 +16,7 @@ FROM base AS skeleton
 COPY . .
 
 # Copy the minimum of files necessary for installing dependencies
-RUN moon docker scaffold frontend processor
+RUN moon docker scaffold cli
 
 #### BUILD
 FROM base AS build
@@ -32,17 +36,16 @@ RUN moon docker setup
 COPY --from=skeleton /app/.moon/docker/sources .
 
 # Build something (optional)
-RUN moon run frontend:build processor:build
+RUN moon run cli:build
 
 # Remove unneeded files and folders
 RUN moon docker prune
 
 ##### RUNNER
-FROM node:20-alpine AS runner
+FROM node:lts-alpine3.17 AS runner
 WORKDIR /app
 
-COPY --from=build /app/pro/frontend/dist ./pro/frontend/dist
-COPY --from=build /app/pro/processor ./pro/processor
+COPY --from=build /app/apps/cli ./apps/cli
 COPY --from=build /app/node_modules ./node_modules
 
 # Copy Prisma schema, migrations, and seed script
@@ -54,5 +57,5 @@ COPY --from=build /app/packages/prisma/seed.mjs ./packages/prisma/seed.mjs
 COPY bin/docker-entry.sh /app/bin/docker-entry.sh
 ENTRYPOINT ["/app/bin/docker-entry.sh"]
 
-WORKDIR /app/pro/processor
-CMD node dist/main.mjs
+WORKDIR /app/apps/cli
+CMD node dist/standalone.mjs

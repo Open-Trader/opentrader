@@ -1,4 +1,18 @@
 services:
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: opentrader-dev
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./opentrader_data:/app/data
+    environment:
+      DATABASE_URL: file:/app/data/dev.db
+      ADMIN_PASSWORD: opentrader
+      HOST: 0.0.0.0
+      PORT: 5000
   monolith:
     build:
       context: .
@@ -14,9 +28,9 @@ services:
       DATABASE_URL: file:/app/data/dev.db
       ADMIN_PASSWORD: opentrader
       PORT: 5000
-#    depends_on:
-#      - database
-#    platform: linux/amd64 # works slow when building on Mac M1
+  #    depends_on:
+  #      - database
+  #    platform: linux/amd64 # works slow when building on Mac M1
   processor:
     build:
       context: .
@@ -25,8 +39,8 @@ services:
       - "4000:4000"
     environment:
       ADMIN_PASSWORD: opentrader
-#    depends_on:
-#      - database
+  #    depends_on:
+  #      - database
   frontend:
     build:
       context: .
@@ -38,8 +52,8 @@ services:
       - "3000:3000"
     environment:
       ADMIN_PASSWORD: opentrader
-#    depends_on:
-#      - database
+  #    depends_on:
+  #      - database
   database:
     image: postgres:latest
     environment:

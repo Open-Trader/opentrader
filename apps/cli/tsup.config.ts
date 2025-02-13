@@ -8,6 +8,7 @@ export default defineConfig({
     cli: "./src/cli.ts",
     daemon: "./src/api/up/daemon.ts",
     main: "./src/main.ts",
+    standalone: "./src/standalone.ts",
   }, // Adjust this to your entry file
   format: ["esm"],
   outDir: "dist",

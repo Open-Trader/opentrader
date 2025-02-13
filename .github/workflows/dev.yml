@@ -19,23 +19,13 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-        with:
-          version: "lab:latest"
-          driver: cloud
-          endpoint: "opentrader/cloud"
+      - name: Build Docker Image
+        run: >-
+          docker build
+          --build-arg ADMIN_PASSWORD=password
+          --build-arg GITHUB_TOKEN=${{ secrets.PRO_GITHUB_TOKEN }}
+          -f pro.Dockerfile
+          -t opentrader/opentrader:latest .
 
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: pro.Dockerfile
-          push: true
-          tags: opentrader/opentrader:latest
-          build-args: |
-            ADMIN_PASSWORD=password
-            GITHUB_TOKEN=${{ secrets.PRO_GITHUB_TOKEN }}
-          # For pull requests, export results to the build cache.
-          # Otherwise, push to a registry.
-          outputs: ${{ github.event_name == 'pull_request' && 'type=cacheonly' || 'type=registry' }}
+      - name: Push Docker Image
+        run: docker push opentrader/opentrader:latest
