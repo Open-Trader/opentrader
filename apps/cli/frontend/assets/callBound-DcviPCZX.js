@@ -1,0 +1,1 @@
+import{h as l,k as c}from"./browser-rfzQWLT_.js";var n,a;function s(){if(a)return n;a=1;var i=c(),t=l(),o=t(i("String.prototype.indexOf"));return n=function(e,u){var r=i(e,!!u);return typeof r=="function"&&o(e,".prototype.")>-1?t(r):r},n}export{s as r};
