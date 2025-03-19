@@ -130,72 +130,9 @@ moon run backend:dev
 - Indicators: [packages/indicators](/packages/indicators/src/indicators)
 - Exchange connectors: [packages/exchanges](/packages/exchanges/src/exchanges)
 
-# Commit Message Guidelines
-As a contributor, squash feature branches onto 'dev' and write a standardized commit message while doing so.
-Each commit message consists of a header, a body and a footer. The header has a special format that includes a type, a scope and a subject:
+# Conventional Commits: Specification & Reference
 
-```bash
-<type>[optional scope]: <description>
+Use Conventional Commits https://www.conventionalcommits.org/en/v1.0.0-beta.2/
 
-[optional body]
 
-[optional footer]
-```
-The commit contains the following structural elements:
-1. Commit `Type`
-- **fix:** A commit of type `fix` patches a bug in your codebase.
-- **feat:** A commit of the type `feat` introduces a new feature to the codebase.
-- **docs:** Documentation only changes
-- **perf:** A code change that improves performance
-- **refactor:** A code change that neither fixes a bug nor adds a feature
-- **style:** Changes that do not affect the meaning of the code (white-space, formatting, missing semi-colons, etc)
-- **test:** Adding missing tests or correcting existing tests
 
-2. Commit `Scope`
-A scope may be provided to a commit’s type. The following is the list of supported scopes:
-- **backtesting**
-- **bot**
-- **daemon**
-- **db**
-- **eslint**
-- **event-bus**
-- **exchanges**
-- **indicators**
-- **logger**
-- **prisma**
-- **processing**
-- **tools**
-- **trpc**
-- **tsconfig**
-- **types**
-
-3. Commit `BREAKING CHANGE`
-A commit that has the text BREAKING CHANGE: at the beginning of its optional body or footer section introduces a breaking API change (correlating with MAJOR in semantic versioning).
-A breaking change can be part of commits of any type. e.g., a fix:, & feat: types would all be valid, in addition to any other type.
-
-4. Commit `SAMPLES`
-- Commit message with description and breaking change in body
-```bash
-feat: allow provided config object to extend other configs
-
-BREAKING CHANGE: `extends` key in config file is now used for extending other config files
-```
-
-- Commit message with no body
-```bash
-docs: correct spelling of CHANGELOG
-```
-
-- Commit message with scope
-```bash
-feat(lang): added polish language
-```
-
-- Commit message for a fix using an (optional) issue number.
-```bash
-fix: minor typos in code
-
-see the issue for details on the typos fixed
-
-fixes issue #12
-```
