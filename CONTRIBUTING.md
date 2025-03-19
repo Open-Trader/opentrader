@@ -130,9 +130,9 @@ moon run backend:dev
 - Indicators: [packages/indicators](/packages/indicators/src/indicators)
 - Exchange connectors: [packages/exchanges](/packages/exchanges/src/exchanges)
 
-# Conventional Commits: Specification & Reference
+# Conventional Commits Reference
 
-Use Conventional Commits https://www.conventionalcommits.org/en/v1.0.0-beta.2/
+The reference link https://www.conventionalcommits.org/en/v1.0.0-beta.2/
 
 
 
