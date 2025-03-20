@@ -22,13 +22,15 @@
     "prettier": "^3.4.2",
     "ts-node": "10.9.2",
     "tsconfig-moon": "^1.3.0",
-    "typescript": "5.7.2"
+    "typescript": "5.7.2",
+    "vitest": "^3.0.4"
   },
   "scripts": {
     "dev": "moon run :dev",
     "build": "moon run :build",
     "lint": "moon run :lint",
     "lint:fix": "moon run :lint-fix",
+    "test": "vitest",
     "typecheck": "moon run :typecheck",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "release": "moon run :build && moon run :dts && ./scripts/release.mjs",
