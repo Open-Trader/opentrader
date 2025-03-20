@@ -25,6 +25,7 @@ export interface ICandlestick {
   high: number;
   low: number;
   close: number;
+  volume: number;
   /**
    * Data generation time, Unix timestamp format in milliseconds,
    * e.g. `1597026383085`

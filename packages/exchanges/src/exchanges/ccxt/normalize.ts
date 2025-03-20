@@ -169,6 +169,7 @@ const getCandlesticks: Normalize["getCandlesticks"] = {
       high: candlestick[2]!,
       low: candlestick[3]!,
       close: candlestick[4]!,
+      volume: candlestick[5]!,
     })),
 };
 
