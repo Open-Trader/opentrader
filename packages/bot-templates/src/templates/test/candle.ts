@@ -3,11 +3,19 @@ import type { IExchange } from "@opentrader/exchanges";
 import type { MarketData } from "@opentrader/types";
 import type { TBotContext } from "@opentrader/bot-processor";
 import { useMarket, useCandle, useExchange } from "@opentrader/bot-processor";
+import { BarSize } from "@opentrader/types";
 import { logger } from "@opentrader/logger";
 
 export function* testCandle(ctx: TBotContext<any>) {
   const { config: bot, onStart, onStop } = ctx;
   const exchange: IExchange = yield useExchange();
+
+  const candles = exchange.getCandlesticks({
+    symbol: 'BTC-USDT',
+    bar: BarSize.ONE_MINUTE,
+  });
+
+  logger.info(`[CandleStrategy] volumne ${JSON.stringify(candles)}`);
 
   if (onStart) {
     logger.info(`[CandleStrategy] Bot started. Using ${exchange.exchangeCode} exchange`);

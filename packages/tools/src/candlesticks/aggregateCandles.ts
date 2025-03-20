@@ -29,5 +29,6 @@ function aggregate(candles: ICandlestick[]) {
     low: candles.reduce((acc, candle) => Math.min(acc, candle.low), Infinity),
     close: candles[candles.length - 1].close,
     timestamp: candles[0].timestamp,
+    volume: candles.reduce((acc, candle) => acc + candle.volume, 0),
   };
 }
