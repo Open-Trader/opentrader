@@ -139,4 +139,5 @@ const normalizeCandle = (candle: OHLCV): ICandlestick => ({
   high: candle[2]!,
   low: candle[3]!,
   close: candle[4]!,
+  volume: candle[5]!,
 });

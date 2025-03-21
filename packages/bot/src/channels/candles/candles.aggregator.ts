@@ -186,6 +186,7 @@ export class CandlesAggregator extends EventEmitter {
         high: lastCandle.close,
         low: lastCandle.close,
         close: lastCandle.close,
+        volume: lastCandle.volume,
       });
       logger.info(`[${this.symbol}#${this.timeframe}] Filled gap for ${new Date(timestamp).toISOString()} candle`);
     }
@@ -330,6 +331,7 @@ function aggregateCandles(candles: ICandlestick[]) {
     low: candles.reduce((acc, candle) => Math.min(acc, candle.low), Infinity),
     close: candles[candles.length - 1].close,
     timestamp: candles[0].timestamp,
+    volume: candles.reduce((acc, candle) => acc + candle.volume, 0),
   };
 }
 
