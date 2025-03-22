@@ -5,11 +5,11 @@ import { aggregateCandles } from "./aggregateCandles.js";
 
 // Sample 1-minute candles for testing
 const oneMinuteCandles: ICandlestick[] = [
-  { timestamp: 0, open: 1, high: 2, low: 1, close: 2 },
-  { timestamp: 60000, open: 2, high: 3, low: 2, close: 3 },
-  { timestamp: 120000, open: 3, high: 4, low: 3, close: 4 },
-  { timestamp: 180000, open: 4, high: 5, low: 3, close: 5 },
-  { timestamp: 240000, open: 5, high: 6, low: 4, close: 6 },
+  { timestamp: 0, open: 1, high: 2, low: 1, close: 2, volume: 10 },
+  { timestamp: 60000, open: 2, high: 3, low: 2, close: 3, volume: 20 },
+  { timestamp: 120000, open: 3, high: 4, low: 3, close: 4, volume: 30 },
+  { timestamp: 180000, open: 4, high: 5, low: 3, close: 5, volume: 40 },
+  { timestamp: 240000, open: 5, high: 6, low: 4, close: 6, volume: 50 },
 ];
 
 describe("aggregateCandles", () => {
@@ -28,6 +28,7 @@ describe("aggregateCandles", () => {
         high: 6,
         low: 1,
         close: 6,
+        volume: 10 + 20 + 30 + 40 + 50,
       },
     ]);
   });
@@ -56,6 +57,7 @@ describe("aggregateCandles", () => {
         high: 6,
         low: 1,
         close: 6,
+        volume: 10 + 20 + 30 + 40 + 50,
       },
       {
         timestamp: 300000,
@@ -63,6 +65,7 @@ describe("aggregateCandles", () => {
         high: 6,
         low: 1,
         close: 6,
+        volume: 10 + 20 + 30 + 40 + 50,
       },
     ]);
   });
