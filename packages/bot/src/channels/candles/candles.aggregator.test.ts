@@ -29,13 +29,14 @@ const createAggregator = async (symbol: string, timeframe: BarSize) => {
  */
 const createCandle = (
   timestamp: Date | number,
-  ohlc: Partial<Pick<ICandlestick, "open" | "high" | "low" | "close">> = {},
+  ohlc: Partial<Pick<ICandlestick, "open" | "high" | "low" | "close" | "volume">> = {},
 ): ICandlestick => ({
   open: ohlc.open ?? 0,
   high: ohlc.high ?? 0,
   low: ohlc.low ?? 0,
   close: ohlc.close ?? 0,
   timestamp: new Date(timestamp).getTime(),
+  volume: ohlc.volume ?? 0,
 });
 
 /**

@@ -26,6 +26,10 @@ export interface ICandlestick {
   low: number;
   close: number;
   /**
+   * Volume in base currency.
+   */
+  volume: number;
+  /**
    * Data generation time, Unix timestamp format in milliseconds,
    * e.g. `1597026383085`
    */

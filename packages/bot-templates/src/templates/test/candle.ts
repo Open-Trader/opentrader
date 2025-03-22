@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { IExchange } from "@opentrader/exchanges";
-import type { MarketData } from "@opentrader/types";
+import { MarketData, ICandlestick, BarSize } from "@opentrader/types";
 import type { TBotContext } from "@opentrader/bot-processor";
 import { useMarket, useCandle, useExchange } from "@opentrader/bot-processor";
 import { logger } from "@opentrader/logger";
@@ -10,6 +10,12 @@ export function* testCandle(ctx: TBotContext<any>) {
   const exchange: IExchange = yield useExchange();
 
   if (onStart) {
+    const candles: ICandlestick[] = yield exchange.getCandlesticks({
+      symbol: "BTC/USDT",
+      bar: BarSize.ONE_MINUTE,
+    });
+    logger.info(`[CandleStrategy] Display volume in ${JSON.stringify(candles)}`);
+
     logger.info(`[CandleStrategy] Bot started. Using ${exchange.exchangeCode} exchange`);
     return;
   }
