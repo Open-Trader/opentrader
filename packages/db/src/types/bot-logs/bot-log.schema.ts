@@ -7,6 +7,7 @@ const ZCandlestick = z.object({
   high: z.number(),
   low: z.number(),
   close: z.number(),
+  volume: z.number(),
   timestamp: z.number(),
 }); // @todo should match ICandlestick interface
 
