@@ -12,4 +12,6 @@ export const exchangeCodeMapCCXT: Record<ExchangeCode, keyof typeof ccxt> = {
   [ExchangeCode.KRAKEN]: "kraken",
   [ExchangeCode.COINBASE]: "coinbase",
   [ExchangeCode.GATEIO]: "gateio",
+  [ExchangeCode.PARADEX]: "paradex",
+  [ExchangeCode.HYPERLIQUID]: "hyperliquid"  
 };

@@ -10,6 +10,8 @@ export const exchanges: Record<ExchangeCode, ReturnType<typeof createExchange>> 
   [ExchangeCode.KRAKEN]: createExchange(ExchangeCode.KRAKEN),
   [ExchangeCode.COINBASE]: createExchange(ExchangeCode.COINBASE),
   [ExchangeCode.GATEIO]: createExchange(ExchangeCode.GATEIO),
+  [ExchangeCode.PARADEX]: createExchange(ExchangeCode.PARADEX),
+  [ExchangeCode.HYPERLIQUID]: createExchange(ExchangeCode.HYPERLIQUID),
 } as const;
 
 export { exchangeCodeMapCCXT };
