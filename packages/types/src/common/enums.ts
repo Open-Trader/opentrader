@@ -20,6 +20,8 @@ export const ExchangeCode = {
   COINBASE: "COINBASE",
   GATEIO: "GATEIO",
   BITGET: "BITGET",
+  PARADEX: "PARADEX",
+  HYPERLIQUID: "HYPERLIQUID"
 } as const;
 
 export type ExchangeCode = (typeof ExchangeCode)[keyof typeof ExchangeCode];
