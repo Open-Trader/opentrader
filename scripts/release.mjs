@@ -7,13 +7,13 @@ import { generatePackageJson } from "./utils/generate-package-json.mjs";
 await $`rm -rf release`;
 await $`mkdir release`;
 
-// Copy the dist directory from the CLI app
-await $`cp -r apps/cli/dist release/`;
+// Copy app dist directory
+await $`cp -r app/dist release/`;
 console.log("Copied ./dist");
 
 // Copy binaries and scripts
-await $`cp -r apps/cli/bin release/`;
-await $`cp -r apps/cli/scripts release/`;
+await $`cp -r app/bin release/`;
+await $`cp -r app/scripts release/`;
 console.log("Copied ./bin and ./scripts");
 
 // Copy Prisma schema and migrations

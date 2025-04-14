@@ -23,6 +23,11 @@ dev.db-journal
 # TS
 tsconfig.tsbuildinfo
 
+# For some reason after `moon run :build`, the `/dts` is created in the root directory.
+# We don't need to emit types at all, because we use a separate command for this: `moon run :dts`
+# Workaround to avoid committing them to the repo.
+/dts
+
 # moon
 .moon/cache
 .moon/docker
