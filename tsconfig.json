@@ -3,7 +3,7 @@
   "files": [],
   "references": [
     {
-      "path": "apps/cli"
+      "path": "app"
     },
     {
       "path": "packages/backtesting"

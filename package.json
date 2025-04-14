@@ -4,7 +4,7 @@
   "author": "bludnic",
   "license": "Apache-2.0",
   "workspaces": [
-    "apps/*",
+    "app",
     "packages/*",
     "pro/*"
   ],
@@ -37,7 +37,7 @@
     "typecheck": "moon run :typecheck",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "release": "moon run :build && moon run :dts && ./scripts/release.mjs",
-    "ui:sync": "moon run frontend:build && rm -rf apps/cli/frontend && cp -r pro/frontend/dist apps/cli/frontend && git add apps/cli/frontend",
+    "ui:sync": "moon run frontend:build && rm -rf app/frontend && cp -r pro/frontend/dist app/frontend && git add app/frontend",
     "debug": "ts-node --transpile-only packages/cli/src/index.ts trade debug"
   },
   "lint-staged": {

@@ -6,15 +6,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const ROOT_DIR = path.resolve(__dirname, "../../");
-const CLI_DIR = path.resolve(ROOT_DIR, "./apps/cli");
+const APP_DIR = path.resolve(ROOT_DIR, "./app");
 const PACKAGES_DIR = path.resolve(ROOT_DIR, "./packages");
 
 console.log("ROOT_DIR", ROOT_DIR);
-console.log("CLI_DIR", CLI_DIR);
+console.log("APP_DIR", APP_DIR);
 console.log("PACKAGES_DIR", PACKAGES_DIR);
 
 export function generatePackageJson(outDir) {
-  const mainPackageJson = JSON.parse(fs.readFileSync(path.join(CLI_DIR, "package.json"), "utf-8"));
+  const mainPackageJson = JSON.parse(fs.readFileSync(path.join(APP_DIR, "package.json"), "utf-8"));
   const dependencies = {};
 
   // Function to merge dependencies, excluding specified packages

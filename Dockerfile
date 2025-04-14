@@ -45,7 +45,7 @@ RUN moon docker prune
 FROM node:lts-alpine3.17 AS runner
 WORKDIR /app
 
-COPY --from=build /app/apps/cli ./apps/cli
+COPY --from=build /app/app ./app
 COPY --from=build /app/node_modules ./node_modules
 
 # Copy Prisma schema, migrations, and seed script
@@ -57,5 +57,5 @@ COPY --from=build /app/packages/prisma/seed.mjs ./packages/prisma/seed.mjs
 COPY bin/docker-entry.sh /app/bin/docker-entry.sh
 ENTRYPOINT ["/app/bin/docker-entry.sh"]
 
-WORKDIR /app/apps/cli
+WORKDIR /app/app
 CMD node dist/standalone.mjs
