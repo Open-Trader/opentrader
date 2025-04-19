@@ -12,7 +12,7 @@ $schema: "https://moonrepo.dev/schemas/workspace.json"
 # path to the project folder as the map value. File paths are relative from the workspace root,
 # and cannot reference projects located outside the workspace boundary.
 projects:
-  - "apps/*"
+  - "app"
   - "packages/*"
   - "pro/*"
 
