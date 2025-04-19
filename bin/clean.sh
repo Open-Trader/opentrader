@@ -15,10 +15,8 @@ remove_directories() {
 # Remove directories in root
 remove_directories .
 
-# Remove directories in apps/{appName}
-for dir in apps/*/; do
-    remove_directories "$dir"
-done
+# Remove directories in app/
+remove_directories "app"
 
 # Remove directories in pro/{appName}
 for dir in pro/*/; do
