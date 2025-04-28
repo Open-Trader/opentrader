@@ -189,7 +189,7 @@ opentrader up
 5. GitHub Codespaces will automatically forward the port. Click on the "Ports" tab to find and access the UI.
 
 > [!NOTE]
-> : When using Codespaces, make sure to configure your exchange API keys in `exchanges.json5` and set up your strategy configuration in `config.json5`.
+> When using Codespaces, make sure to configure your exchange API keys in `exchanges.json5` and set up your strategy configuration in `config.json5`.
 
 # Usage
 
