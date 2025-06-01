@@ -244,7 +244,7 @@ async function runBuyEffect(effect: ReturnType<typeof buy>, ctx: TBotContext<any
 
     entry = {
       type: XOrderType.Limit,
-      side: XOrderSide.Sell,
+      side: XOrderSide.Buy,
       status: XOrderStatus.Idle,
       price: payload.price,
       quantity: payload.quantity,
@@ -298,7 +298,7 @@ async function runSellEffect(effect: ReturnType<typeof sell>, ctx: TBotContext<a
     tp: {
       type: payload.orderType || XOrderType.Limit,
       status: XOrderStatus.Idle,
-      side: XOrderSide.Buy,
+      side: XOrderSide.Sell,
       price: payload.price,
       quantity: payload.quantity,
     },
