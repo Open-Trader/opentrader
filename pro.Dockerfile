@@ -7,7 +7,7 @@ FROM node:latest AS base
 WORKDIR /app
 
 # Install moon binary
-RUN npm install -g @moonrepo/cli
+RUN npm install -g @moonrepo/cli@latest
 
 #### SKELETON
 FROM base AS skeleton
@@ -20,6 +20,12 @@ ARG GITHUB_TOKEN
 RUN rm -rf pro
 RUN git config --global url."https://${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"
 RUN git clone https://github.com/bludnic/opentrader-pro.git pro
+
+# Without this, `moon docker scaffold` throws an error:
+# Error: fs::read
+# Failed to read path /app/pro/.git.
+# ╰─▶ Is a directory (os error 21)
+RUN rm -rf pro/.git
 
 # Copy the minimum of files necessary for installing dependencies
 RUN moon docker scaffold frontend processor
