@@ -40,7 +40,7 @@ export class TradeManager {
 
       const trade = new Trade(data, this.ordersStream);
       await trade.place();
-      logger.info(`Placed with id ${trade.smartTrade.id} was placed on exchange.`);
+      logger.debug(`Placed with id ${trade.smartTrade.id} was placed on exchange.`);
       this.trades.push(trade);
     }
   }
