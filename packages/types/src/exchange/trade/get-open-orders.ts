@@ -9,11 +9,24 @@ export interface IOpenOrder {
    * Client-supplied order ID
    */
   clientOrderId?: string;
+  symbol: string;
   side: OrderSide;
   /**
    * Quantity to buy or sell.
    */
   quantity: number;
+  /**
+   * Quantity executed
+   */
+  quantityExecuted: number;
+  /**
+   * Volume in quoteCurrency.
+   */
+  volume: number;
+  /**
+   * Volume executed
+   */
+  volumeExecuted: number;
   /**
    * Order price.
    */

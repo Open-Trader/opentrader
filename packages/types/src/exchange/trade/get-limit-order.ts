@@ -20,13 +20,26 @@ export interface IGetLimitOrderResponse {
    * Client-supplied order ID
    */
   clientOrderId?: string;
+  symbol: string;
   side: OrderSide;
   /**
-   * Quantity to buy or sell.
+   * Quantity to buy or sell in baseCurrency.
    */
   quantity: number;
   /**
-   * Order price.
+   * Quantity executed
+   */
+  quantityExecuted: number;
+  /**
+   * Volume in quoteCurrency.
+   */
+  volume: number;
+  /**
+   * Volume executed
+   */
+  volumeExecuted: number;
+  /**
+   * Order limit price. May be undefined for not filled market orders.
    */
   price: number;
   /**

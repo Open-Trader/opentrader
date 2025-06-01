@@ -26,9 +26,13 @@ const getLimitOrder: Normalize["getLimitOrder"] = {
   response: (order) => ({
     exchangeOrderId: order.id,
     clientOrderId: order.clientOrderId,
+    symbol: order.symbol,
     side: order.side as OrderSide,
     quantity: order.amount,
-    price: order.price,
+    quantityExecuted: order.filled,
+    volume: order.amount * order.price,
+    volumeExecuted: order.cost,
+    price: order.price, // could be undefined for market order, in case not filled yet?
     filledPrice: order.average || null,
     status: normalizeOrderStatus(order),
     fee: order.fee?.cost || 0,
@@ -103,8 +107,12 @@ const getOpenOrders: Normalize["getOpenOrders"] = {
     orders.map((order) => ({
       exchangeOrderId: order.id,
       clientOrderId: order.clientOrderId,
+      symbol: order.symbol,
       side: order.side as OrderSide,
       quantity: order.amount,
+      quantityExecuted: order.filled,
+      volume: order.amount * order.price,
+      volumeExecuted: order.cost,
       price: order.price,
       filledPrice: null,
       status: normalizeOrderStatus(order) as "open",
@@ -120,8 +128,12 @@ const getClosedOrders: Normalize["getClosedOrders"] = {
     orders.map((order) => ({
       exchangeOrderId: order.id,
       clientOrderId: order.clientOrderId,
+      symbol: order.symbol,
       side: order.side as OrderSide,
       quantity: order.amount,
+      quantityExecuted: order.filled,
+      volume: order.amount * order.price,
+      volumeExecuted: order.cost,
       price: order.price,
       filledPrice: order.average || order.price, // assume that filled order must always contain `order.average`
       status: normalizeOrderStatus(order) as "filled" | "canceled",

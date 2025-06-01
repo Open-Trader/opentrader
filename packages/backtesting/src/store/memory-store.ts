@@ -59,6 +59,9 @@ export class MemoryStore implements IStore {
             entityType: XEntityType.EntryOrder,
             symbol: entry.symbol!,
             quantity: entry.quantity,
+            quantityExecuted: entry.quantity,
+            volume: entry.quantity * entry.price,
+            volumeExecuted: entry.quantity * entry.price,
             side: XOrderSide.Buy,
             type: XOrderType.Market,
             price: undefined,
@@ -77,6 +80,9 @@ export class MemoryStore implements IStore {
             entityType: XEntityType.EntryOrder,
             symbol: entry.symbol!,
             quantity: entry.quantity,
+            quantityExecuted: 0,
+            volume: 0, // no filledPrice to calculate
+            volumeExecuted: 0, // no filledPrice to calculate
             side: XOrderSide.Buy,
             type: XOrderType.Market,
             price: undefined,
@@ -103,6 +109,9 @@ export class MemoryStore implements IStore {
             entityType: XEntityType.EntryOrder,
             symbol: entry.symbol!,
             quantity: entry.quantity,
+            quantityExecuted: entry.quantity,
+            volume: entry.quantity * entry.price,
+            volumeExecuted: entry.quantity * entry.price,
             side: XOrderSide.Buy,
             type: XOrderType.Limit,
             price: entry.price,
@@ -121,6 +130,9 @@ export class MemoryStore implements IStore {
             entityType: XEntityType.EntryOrder,
             symbol: entry.symbol!,
             quantity: entry.quantity,
+            quantityExecuted: 0,
+            volume: entry.quantity * entry.price,
+            volumeExecuted: 0,
             side: XOrderSide.Buy,
             type: XOrderType.Limit,
             price: entry.price,
@@ -150,6 +162,9 @@ export class MemoryStore implements IStore {
             entityType: XEntityType.TakeProfitOrder,
             symbol: tp.symbol!,
             quantity: tp.quantity,
+            quantityExecuted: 0,
+            volume: 0, // no filledPrice to calculate
+            volumeExecuted: 0, // no filledPrice to calculate
             side: XOrderSide.Sell,
             type: XOrderType.Market,
             price: undefined,
@@ -181,6 +196,9 @@ export class MemoryStore implements IStore {
             entityType: XEntityType.TakeProfitOrder,
             symbol: tp.symbol!,
             quantity: tp.quantity,
+            quantityExecuted: 0,
+            volume: entry.quantity * tp.price,
+            volumeExecuted: 0,
             side: XOrderSide.Sell,
             type: XOrderType.Limit,
             price: tp.price,
@@ -249,6 +267,9 @@ export class MemoryStore implements IStore {
             entityType: XEntityType.TakeProfitOrder,
             symbol: payload.tp.symbol!,
             quantity: payload.tp.quantity,
+            quantityExecuted: 0,
+            volume: 0, // no filledPrice to calculate
+            volumeExecuted: 0, // no filledPrice to calculate
             side: XOrderSide.Sell,
             type: XOrderType.Market,
             price: undefined,
@@ -262,6 +283,7 @@ export class MemoryStore implements IStore {
           throw new Error("Invalid order status");
       }
     } else {
+      // Limit
       if (!payload.tp.price) {
         throw new Error(`"price" is required for Limit tp orders`);
       }
@@ -278,6 +300,9 @@ export class MemoryStore implements IStore {
             entityType: XEntityType.TakeProfitOrder,
             symbol: payload.tp.symbol!,
             quantity: payload.tp.quantity,
+            quantityExecuted: 0,
+            volume: payload.tp.quantity * payload.tp.price,
+            volumeExecuted: 0,
             side: XOrderSide.Sell,
             type: XOrderType.Limit,
             price: payload.tp.price,
@@ -305,6 +330,16 @@ export class MemoryStore implements IStore {
   async cancelSmartTrade(_ref: string, _botId: number) {
     return false; // @todo
     // throw new Error("Not implemented yet.");
+  }
+
+  async getOpenTrades() {
+    return this.marketSimulator.smartTrades.filter(
+      (trade) =>
+        trade.entryOrder.status === "Idle" ||
+        trade.entryOrder.status === "Placed" ||
+        trade.tpOrder?.status === "Idle" ||
+        trade.tpOrder?.status === "Placed",
+    );
   }
 
   async getExchange(_label: string): Promise<IExchange | null> {

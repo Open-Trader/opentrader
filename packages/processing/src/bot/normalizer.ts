@@ -20,12 +20,20 @@ import { nullToUndefined, required } from "../utils/index.js";
 
 export class OrderNormalizer {
   static normalize(order: Order): StrategyOrder {
+    const quantityExecuted = order.status === XOrderStatus.Filled ? order.quantity : 0;
+    const filledOrLimitPrice = order.filledPrice || order.price || 0;
+    const volume = order.quantity * filledOrLimitPrice;
+    const volumeExecuted = order.status === XOrderStatus.Filled ? volume : 0;
+
     return {
       ...order,
       type: order.type as XOrderType,
       side: order.side as XOrderSide,
       status: order.status as XOrderStatus,
       entityType: order.entityType as XEntityType,
+      quantityExecuted,
+      volume,
+      volumeExecuted,
       price: nullToUndefined(order.price),
       stopPrice: nullToUndefined(order.stopPrice),
       relativePrice: nullToUndefined(order.relativePrice),

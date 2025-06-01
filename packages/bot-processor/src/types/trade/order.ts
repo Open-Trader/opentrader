@@ -6,6 +6,10 @@ export type Order = {
   type: XOrderType;
   entityType: XEntityType;
   side: XOrderSide;
+  quantity: number;
+  quantityExecuted: number;
+  volume: number;
+  volumeExecuted: number;
   price?: number;
   stopPrice?: number;
   relativePrice?: number;
@@ -14,7 +18,6 @@ export type Order = {
   symbol: string;
   exchangeAccountId: number;
   exchangeOrderId?: string;
-  quantity: number;
 
   createdAt: Date;
   updatedAt: Date;

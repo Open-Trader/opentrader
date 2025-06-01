@@ -205,6 +205,11 @@ export class PaperExchange extends CCXTExchange {
       createdAt: order.createdAt.getTime(),
       lastTradeTimestamp: order.lastTradeTimestamp.getTime(),
       exchangeOrderId: `${order.id}`,
+
+      // @todo computed
+      quantityExecuted: 0,
+      volume: 0,
+      volumeExecuted: 0,
     };
   }
 
@@ -314,6 +319,11 @@ export class PaperExchange extends CCXTExchange {
       lastTradeTimestamp: order.lastTradeTimestamp.getTime(),
       exchangeOrderId: `${order.id}`,
       filledPrice: null,
+
+      // @todo computed
+      quantityExecuted: 0,
+      volume: 0,
+      volumeExecuted: 0,
     }));
   }
 
@@ -339,6 +349,11 @@ export class PaperExchange extends CCXTExchange {
       lastTradeTimestamp: order.lastTradeTimestamp.getTime(),
       exchangeOrderId: `${order.id}`,
       filledPrice: order.filledPrice!,
+
+      // @todo computed
+      quantityExecuted: 0,
+      volume: 0,
+      volumeExecuted: 0,
     }));
   }
 
