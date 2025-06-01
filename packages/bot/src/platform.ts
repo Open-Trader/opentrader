@@ -9,7 +9,6 @@ import { logger } from "@opentrader/logger";
 import { exchangeProvider } from "@opentrader/exchanges";
 import { BotProcessing } from "@opentrader/processing";
 import { eventBus } from "@opentrader/event-bus";
-import { store } from "@opentrader/bot-store";
 import { MarketEvent } from "@opentrader/types";
 import { EventEmitter } from "node:events";
 import { MarketsStream } from "./streams/markets.stream.js";
@@ -220,7 +219,7 @@ export class Platform {
   }
 
   handleMarketEvent = (event: MarketEvent) => {
-    store.updateMarket(event);
+    //
   };
 
   handleOrderEvent = async (_event: OrderEvent) => {
