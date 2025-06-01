@@ -16,5 +16,7 @@ export interface IStore {
    */
   cancelSmartTrade: (ref: string, botId: number) => Promise<boolean>;
 
+  getOpenTrades: (botId: number) => Promise<Trade[]>;
+
   getExchange: (label: string) => Promise<IExchange | null>;
 }

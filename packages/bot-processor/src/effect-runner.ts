@@ -20,7 +20,14 @@ import { aggregateCandles, IndicatorsValues } from "@opentrader/tools";
 import { XOrderSide, XOrderStatus, XOrderType } from "@opentrader/types";
 import { SmartTradeService } from "./types/index.js";
 import type { TBotContext } from "./types/index.js";
-import { BaseEffect, EffectType, USE_DCA, USE_INDICATOR } from "./effects/types/index.js";
+import {
+  BaseEffect,
+  CANCEL_ALL_TRADES,
+  EffectType,
+  GET_OPEN_TRADES,
+  USE_DCA,
+  USE_INDICATOR,
+} from "./effects/types/index.js";
 import {
   buy,
   useTrade,
@@ -38,8 +45,14 @@ import {
   useDca,
   useIndicator,
   useIndicators,
+  getOpenTrades,
+  cancelAllTrades,
+  CancelAllTradesResult,
+  all,
+  isEffect,
 } from "./effects/index.js";
 import {
+  ALL,
   BUY,
   CANCEL_SMART_TRADE,
   CREATE_SMART_TRADE,
@@ -60,6 +73,7 @@ export const effectRunnerMap: Record<
   EffectType,
   (effect: BaseEffect<any, any, any>, ctx: TBotContext<any>) => unknown
 > = {
+  [ALL]: runAllEffect,
   [USE_SMART_TRADE]: runUseSmartTradeEffect,
   [GET_SMART_TRADE]: runGetSmartTradeEffect,
   [CANCEL_SMART_TRADE]: runCancelSmartTradeEffect,
@@ -70,6 +84,8 @@ export const effectRunnerMap: Record<
   [USE_DCA]: runUseDcaEffect,
   [BUY]: runBuyEffect,
   [SELL]: runSellEffect,
+  [GET_OPEN_TRADES]: runGetOpenTradesEffect,
+  [CANCEL_ALL_TRADES]: runCancelAllTradesEffect,
   [USE_EXCHANGE]: runUseExchangeEffect,
   [USE_INDICATOR]: runUseIndicatorEffect,
   [USE_INDICATORS]: runUseIndicatorsEffect,
@@ -77,6 +93,23 @@ export const effectRunnerMap: Record<
   [USE_CANDLE]: runUseCandleEffect,
   [USE_RSI_INDICATOR]: runUseRsiIndicatorEffect,
 };
+
+export async function runAllEffect(effect: ReturnType<typeof all>, ctx: TBotContext<any>): Promise<Array<unknown>> {
+  const promises = [];
+  for (const task of effect.payload) {
+    if (task instanceof Promise) {
+      promises.push(task);
+    } else if (isEffect(task)) {
+      const effectRunner = effectRunnerMap[task.type];
+      promises.push(effectRunner(task, ctx));
+    } else {
+      console.log("Unsupported effect in yield all()", task);
+      throw new Error("Unsupported effect in yield all()");
+    }
+  }
+
+  return Promise.all(promises);
+}
 
 export async function runUseSmartTradeEffect(
   effect: ReturnType<typeof useSmartTrade>,
@@ -278,6 +311,31 @@ async function runSellEffect(effect: ReturnType<typeof sell>, ctx: TBotContext<a
   }
 
   return new SmartTradeService(effect.ref, smartTrade);
+}
+
+async function runGetOpenTradesEffect(effect: ReturnType<typeof getOpenTrades>, ctx: TBotContext<any>) {
+  const trades = await ctx.control.getOpenTrades();
+
+  return trades.map((trade) => new SmartTradeService(trade.ref, trade));
+}
+
+async function runCancelAllTradesEffect(
+  effect: ReturnType<typeof cancelAllTrades>,
+  ctx: TBotContext<any>,
+): Promise<CancelAllTradesResult> {
+  const trades = await ctx.control.getOpenTrades();
+
+  let cancelledCount = 0;
+  for (const trade of trades) {
+    const cancelled = await ctx.control.cancelSmartTrade(trade.ref!);
+    if (cancelled) cancelledCount++;
+  }
+
+  return {
+    total: trades.length,
+    cancelled: cancelledCount,
+    failed: trades.length - cancelledCount,
+  };
 }
 
 async function runUseExchangeEffect(effect: ReturnType<typeof useExchange>, ctx: TBotContext<any>) {

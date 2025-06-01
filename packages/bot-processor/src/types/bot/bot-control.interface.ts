@@ -12,5 +12,6 @@ export interface IBotControl {
   getOrCreateSmartTrade: (ref: string, payload: CreateTrade) => Promise<Trade>;
   replaceSmartTrade: (ref: string, payload: Trade) => Promise<Trade>;
   cancelSmartTrade: (ref: string) => Promise<boolean>;
+  getOpenTrades: () => Promise<Trade[]>;
   getExchange: (label: string) => Promise<IExchange | null>;
 }

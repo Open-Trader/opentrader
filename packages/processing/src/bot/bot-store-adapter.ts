@@ -2,7 +2,7 @@ import { CreateTrade, IStore } from "@opentrader/bot-processor";
 import { xprisma } from "@opentrader/db";
 import { exchangeProvider } from "@opentrader/exchanges";
 import { logger } from "@opentrader/logger";
-import { XTakeProfitType } from "@opentrader/types";
+import { XOrderStatus, XTakeProfitType } from "@opentrader/types";
 import { SmartTradeExecutor } from "../executors/index.js";
 import { OrderNormalizer, SmartTradeNormalizer } from "./normalizer.js";
 
@@ -159,5 +159,25 @@ export class BotStoreAdapter implements IStore {
     }
 
     return exchangeProvider.fromAccount(exchangeAccount);
+  }
+
+  async getOpenTrades(botId: number) {
+    const trades = await xprisma.smartTrade.findMany({
+      where: {
+        ref: { not: null },
+        bot: { id: botId },
+        orders: {
+          some: {
+            status: { in: [XOrderStatus.Idle, XOrderStatus.Placed] },
+          },
+        },
+      },
+      include: {
+        exchangeAccount: true,
+        orders: true,
+      },
+    });
+
+    return trades.map((trade) => SmartTradeNormalizer.normalize(trade, { ref: trade.ref! }));
   }
 }

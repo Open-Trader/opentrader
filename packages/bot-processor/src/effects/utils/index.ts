@@ -17,3 +17,7 @@ export function isEffect<T extends EffectType, P = undefined, R = undefined>(
 ): effect is BaseEffect<T, P, R> {
   return !!(effect as BaseEffect<any>)?.type;
 }
+
+export function isNestedGenerator(value: unknown): value is Generator {
+  return typeof (value as Generator)?.next === "function";
+}

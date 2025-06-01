@@ -75,6 +75,10 @@ export class BotControl<T extends IBotConfiguration> implements IBotControl {
     }
   }
 
+  async getOpenTrades() {
+    return this.store.getOpenTrades(this.bot.id);
+  }
+
   async cancelSmartTrade(ref: string) {
     return this.store.cancelSmartTrade(ref, this.bot.id);
   }

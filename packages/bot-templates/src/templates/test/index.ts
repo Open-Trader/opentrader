@@ -8,3 +8,8 @@ export * from "./testMarketOrder.js";
 export * from "./dca.js";
 export * from "./stopLoss.js";
 export * from "./testError.js";
+export * from "./testSubgenerator.js";
+export * from "./testOrderbook.js";
+export * from "./testTicker.js";
+export * from "./testPublicTrade.js";
+export * from "./testAllEffect.js";
