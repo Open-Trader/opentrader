@@ -90,6 +90,9 @@ export class BotService {
     }
   }
 
+  /**
+   * @deprecated
+   */
   assertIsNotProcessing() {
     if (this.bot.processing) {
       throw new TRPCError({
