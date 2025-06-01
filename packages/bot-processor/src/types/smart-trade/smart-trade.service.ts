@@ -9,8 +9,8 @@ export class SmartTradeService {
   sl: Trade["slOrder"];
 
   constructor(
-    private ref: string,
-    private smartTrade: Trade,
+    public ref: string,
+    public smartTrade: Trade,
   ) {
     // Instead of assigning prop by prop
     // it is possible to use `Object.assign(this, smartTrade)`
