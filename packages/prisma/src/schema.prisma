@@ -227,7 +227,7 @@ model Bot {
 model BotLog {
   id               Int      @id @default(autoincrement())
   action           String // type StrategyAction
-  triggerEventType String? // type MarketEventType
+  triggerEventType String? // type StrategyEventType
   context          String? // type MarketData, JSON stringified
   error            String? // type StrategyError, An error occured during the strategy execution, JSON striginfied
   startedAt        DateTime // start execution time

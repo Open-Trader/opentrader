@@ -42,7 +42,7 @@ export class OrderSynchronizerWsWatcher extends OrderSynchronizerWatcher {
           const order = await xprisma.order.findByExchangeOrderId(exchangeOrder.exchangeOrderId);
 
           if (!order) {
-            logger.info(`Order "${exchangeOrder.exchangeOrderId}" is not linked to any SmartTrade`);
+            logger.debug(`Order "${exchangeOrder.exchangeOrderId}" is not linked to any SmartTrade`);
             continue;
           }
 
@@ -72,7 +72,12 @@ export class OrderSynchronizerWsWatcher extends OrderSynchronizerWatcher {
           }
 
           if (actualExchangeOrder.status === "open") {
-            this.emit("onPlaced", [actualExchangeOrder, order, this.exchange.exchangeCode as ExchangeCode]);
+            this.emit("onPlaced", [
+              actualExchangeOrder,
+              order,
+              this.exchange.exchangeCode as ExchangeCode,
+              this.exchange.isDemoAccount,
+            ]);
           } else if (actualExchangeOrder.status === "filled") {
             const statusChanged = order.status !== "Filled";
 

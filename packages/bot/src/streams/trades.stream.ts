@@ -1,22 +1,78 @@
 import { EventEmitter } from "node:events";
+import type { TBotWithExchangeAccount } from "@opentrader/db";
+import { findStrategy } from "@opentrader/bot-templates/server";
+import { getWatchers } from "@opentrader/processing";
+import { decomposeSymbolId } from "@opentrader/tools";
+import { ExchangeCode } from "@opentrader/types";
 import { exchangeProvider } from "@opentrader/exchanges";
 import { logger } from "@opentrader/logger";
-import type { TBotWithExchangeAccount } from "@opentrader/db";
-import { xprisma } from "@opentrader/db";
-import { findStrategy } from "@opentrader/bot-templates/server";
-import { getWatchers, getTimeframe } from "@opentrader/processing";
-import { decomposeSymbolId } from "@opentrader/tools";
-import { BarSize, ExchangeCode } from "@opentrader/types";
-import type { TradeEvent } from "../channels/index.js";
-import { TradesChannel } from "../channels/index.js";
+import { TradesChannel, type TradeEvent } from "../channels/index.js";
+
+class TradesRegistry {
+  private channels: Map<string, TradesChannel> = new Map();
+
+  getKey(exchangeCode: ExchangeCode, symbol: string, isDemoAccount: boolean): string {
+    return `${exchangeCode}${isDemoAccount ? "-demo" : ""}:${symbol}`;
+  }
+
+  async getOrCreate(exchangeCode: ExchangeCode, symbol: string, isDemoAccount: boolean): Promise<TradesChannel> {
+    const key = this.getKey(exchangeCode, symbol, isDemoAccount);
+    if (this.channels.has(key)) return this.channels.get(key)!;
+
+    const exchange = exchangeProvider.fromCode(exchangeCode, isDemoAccount);
+    const channel = new TradesChannel(symbol, exchange);
+    await channel.init();
+    this.channels.set(key, channel);
+    return channel;
+  }
+
+  getActiveKeysFromBots(bots: TBotWithExchangeAccount[]): Set<string> {
+    const activeKeys = new Set<string>();
+
+    for (const bot of bots) {
+      const { strategyFn } = findStrategy(bot.template);
+      const { watchTrades } = getWatchers(strategyFn, bot);
+      const { isDemoAccount } = bot.exchangeAccount;
+
+      for (const symbolId of watchTrades) {
+        const { exchangeCode, currencyPairSymbol: symbol } = decomposeSymbolId(symbolId);
+        activeKeys.add(this.getKey(exchangeCode, symbol, isDemoAccount));
+      }
+    }
+
+    return activeKeys;
+  }
+
+  cleanupFromBots(bots: TBotWithExchangeAccount[]) {
+    const activeKeys = this.getActiveKeysFromBots(bots);
+    this.cleanup(activeKeys);
+  }
+
+  private cleanup(activeKeys: Set<string>) {
+    for (const [key, channel] of this.channels.entries()) {
+      if (!activeKeys.has(key)) {
+        logger.info(`[TradesRegistry] Removing stale channel for ${key}`);
+        channel.stop();
+        this.channels.delete(key);
+      }
+    }
+  }
+
+  stopAll() {
+    for (const channel of this.channels.values()) {
+      channel.stop();
+    }
+    this.channels.clear();
+  }
+}
 
 /**
  * Emits:
  * - trade: TradeEvent
  */
 export class TradesStream extends EventEmitter {
-  private channels: TradesChannel[] = [];
   private bots: TBotWithExchangeAccount[] = [];
+  private registry = new TradesRegistry();
 
   constructor(bots: TBotWithExchangeAccount[]) {
     super();
@@ -29,95 +85,28 @@ export class TradesStream extends EventEmitter {
     }
   }
 
-  /**
-   * Subscribes the bot to the trades channel.
-   * It will create the channel if necessary or reusing it if it already exists.
-   * @param bot Bot to add
-   * @returns
-   */
   async addBot(bot: TBotWithExchangeAccount) {
-    const exchangeAccount = await xprisma.exchangeAccount.findUniqueOrThrow({
-      where: {
-        id: bot.exchangeAccountId,
-      },
-    });
-    const exchange = exchangeProvider.fromAccount(exchangeAccount);
-    const symbol = bot.symbol;
+    const { strategyFn } = findStrategy(bot.template);
+    const { watchTrades: symbols } = getWatchers(strategyFn, bot);
+    const { isDemoAccount } = bot.exchangeAccount;
 
-    let channel = this.channels.find((channel) => channel.exchangeCode === exchange.exchangeCode);
-    if (!channel) {
-      channel = new TradesChannel(exchange);
-      this.channels.push(channel);
-
-      logger.info(`[TradesConsumer] Created ${exchange.exchangeCode}:${symbol} channel`);
-
-      // @todo type
-      channel.on("trade", this.handleTrade);
-    }
-
-    await channel.add(symbol);
-    logger.info(
-      `[TradesConsumer]: Subscribed bot [${bot.id}:"${bot.name}"] to the ${exchange.exchangeCode}:${symbol} channel`,
-    );
-  }
-
-  /**
-   * Remove unused channels that are no longer used by any bots.
-   * Triggered when any bot was stopped.
-   */
-  cleanStaleChannels(bots: TBotWithExchangeAccount[]) {
-    const botsInUse: Array<{ timeframe: BarSize | null; symbols: string[]; exchangeCodes: ExchangeCode[] }> = [];
-    for (const bot of bots) {
-      const { strategyFn } = findStrategy(bot.template);
-      const { watchTrades } = getWatchers(strategyFn, bot);
-
-      botsInUse.push({
-        timeframe: getTimeframe(strategyFn, bot), // override
-        symbols: watchTrades,
-        exchangeCodes: [...new Set(watchTrades.map((symbolId) => decomposeSymbolId(symbolId).exchangeCode))],
+    for (const symbolId of symbols) {
+      const { exchangeCode, currencyPairSymbol: symbol } = decomposeSymbolId(symbolId);
+      const channel = await this.registry.getOrCreate(exchangeCode, symbol, isDemoAccount);
+      channel.on("trade", (event: TradeEvent) => {
+        this.emit("trade", event);
       });
-    }
 
-    for (const channel of this.channels) {
-      // Clean stale channels
-      const isChannelUsedByAnyBot = botsInUse.some((bot) => bot.exchangeCodes.includes(channel.exchangeCode));
-      if (!isChannelUsedByAnyBot) {
-        logger.debug(`[TradesConsumer] Removing stale channel ${channel.exchangeCode}`);
-        this.removeChannel(channel);
-        continue; // no need to check watchers
-      }
-
-      // Clean up stale watchers
-      for (const watcher of channel.getWatchers()) {
-        const isWatcherUsedByAnyBot = botsInUse.some((bot) =>
-          bot.symbols.includes(`${channel.exchangeCode}:${watcher.symbol}`),
-        );
-
-        if (!isWatcherUsedByAnyBot) {
-          logger.debug(`[TradesConsumer] Removing stale watcher ${channel.exchangeCode}:${watcher.symbol}`);
-          channel.removeWatcher(watcher);
-        }
-      }
+      const key = this.registry.getKey(exchangeCode, symbol, isDemoAccount);
+      logger.info(`[TradesStream]: Bot [${bot.id} - ${bot.name}] subscribed to ${key}`);
     }
   }
 
-  private handleTrade = async (data: TradeEvent) => {
-    this.emit("trade", data);
-  };
-
-  /**
-   * Destroy and remove the channel from the list.
-   */
-  private removeChannel(channel: TradesChannel) {
-    channel.off("trade", this.handleTrade);
-    channel.destroy();
-
-    this.channels = this.channels.filter((c) => c !== channel);
+  cleanStaleChannels(bots: TBotWithExchangeAccount[]) {
+    this.registry.cleanupFromBots(bots);
   }
 
   destroy() {
-    for (const channel of this.channels) {
-      channel.destroy();
-    }
+    this.registry.stopAll();
   }
 }

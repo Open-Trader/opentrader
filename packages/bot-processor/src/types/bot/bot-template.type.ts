@@ -1,5 +1,5 @@
 import type { ZodObject } from "zod";
-import { BarSize, MarketEventType } from "@opentrader/types";
+import { BarSize, StrategyEventType } from "@opentrader/types";
 import type { TBotContext } from "./bot-context.type.js";
 import type { IBotConfiguration } from "./bot-configuration.interface.js";
 
@@ -34,6 +34,10 @@ export interface BotTemplate<T extends IBotConfiguration> {
    * If not provided, the timeframe from the bot config will be used.
    */
   timeframe?: BarSize | null | ((botConfig: T) => BarSize | null | undefined);
+  /**
+   * Strategy run interval in milliseconds.
+   */
+  interval?: number;
   /**
    * Strategy params schema.
    */
@@ -92,11 +96,12 @@ export interface BotTemplate<T extends IBotConfiguration> {
      * The size of the candle is determined by `timeframe` property above.
      * If not provided, the channel will listen to 1m candles.
      */
-    [MarketEventType.onCandleClosed]?: boolean | ((botConfig: T) => boolean);
-    [MarketEventType.onPublicTrade]?: boolean | ((botConfig: T) => boolean);
-    [MarketEventType.onOrderbookChange]?: boolean | ((botConfig: T) => boolean);
-    [MarketEventType.onTickerChange]?: boolean | ((botConfig: T) => boolean);
-    [MarketEventType.onOrderFilled]?: boolean | ((botConfig: T) => boolean);
-    [MarketEventType.onTradeCompleted]?: boolean | ((botConfig: T) => boolean);
+    [StrategyEventType.onCandleClosed]?: boolean | ((botConfig: T) => boolean);
+    [StrategyEventType.onPublicTrade]?: boolean | ((botConfig: T) => boolean);
+    [StrategyEventType.onOrderbookChange]?: boolean | ((botConfig: T) => boolean);
+    [StrategyEventType.onTickerChange]?: boolean | ((botConfig: T) => boolean);
+    [StrategyEventType.onOrderFilled]?: boolean | ((botConfig: T) => boolean);
+    [StrategyEventType.onTradeCompleted]?: boolean | ((botConfig: T) => boolean);
+    [StrategyEventType.onInterval]?: boolean | ((botConfig: T) => boolean); // If true, the bot will be run on each `strategy.interval`
   };
 }

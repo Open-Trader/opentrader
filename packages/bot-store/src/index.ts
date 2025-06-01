@@ -18,12 +18,21 @@
 
 import { TBotWithExchangeAccount, xprisma } from "@opentrader/db";
 import { BotState } from "@opentrader/bot-processor";
-import { MarketData, MarketEvent, MarketId, MarketEventType } from "@opentrader/types";
+import { MarketData, MarketEvent, MarketId, StrategyEventType } from "@opentrader/types";
 import { eventBus } from "@opentrader/event-bus";
 
 type BotId = number;
 
-export class BotStore {
+/**
+ * @deprecated
+ *
+ * BotStore is deprecated as a central container for market data.
+ * It can be used in the future for tracking enabled bots, runtime state, and processing flags.
+ *
+ * Now each Bot instance uses its own BotMarketStore to maintain isolated, up-to-date
+ * market context.
+ */
+class BotStore {
   unsubscribeFromEventBus?: () => void;
 
   bots: TBotWithExchangeAccount[] = [];
@@ -117,17 +126,17 @@ export class BotStore {
     }
 
     switch (data.type) {
-      case MarketEventType.onCandleClosed:
+      case StrategyEventType.onCandleClosed:
         this.markets[marketId].candle = data.candle;
         this.markets[marketId].candles = data.candles;
         break;
-      case MarketEventType.onOrderbookChange:
+      case StrategyEventType.onOrderbookChange:
         this.markets[marketId].orderbook = data.orderbook;
         break;
-      case MarketEventType.onTickerChange:
+      case StrategyEventType.onTickerChange:
         this.markets[marketId].ticker = data.ticker;
         break;
-      case MarketEventType.onPublicTrade:
+      case StrategyEventType.onPublicTrade:
         this.markets[marketId].trade = data.trade;
         break;
       default:
@@ -137,4 +146,4 @@ export class BotStore {
   }
 }
 
-export const store = new BotStore();
+const store = new BotStore();

@@ -1,14 +1,13 @@
 import { EventEmitter } from "node:events";
+import { ExchangeClosedByUser, NetworkError, RequestTimeout } from "ccxt";
 import type { IExchange } from "@opentrader/exchanges";
-import type { BarSize, ICandlestick, MarketId } from "@opentrader/types";
 import { logger } from "@opentrader/logger";
-import type { CandleEvent } from "./types.js";
-import { CandlesWatcher } from "./candles.watcher.js";
-import { CandlesAggregator } from "./candles.aggregator.js";
+import { barSizeToDuration } from "@opentrader/tools";
+import { BarSize, ICandlestick } from "@opentrader/types";
 
 /**
- * Channel that subscribes to 1m candles of specific exchange
- * and aggregate them to higher timeframes.
+ * Channel that subscribes to 1m candles from a specific exchange
+ * and aggregates them into higher timeframes.
  *
  * Emits:
  * - candle: `CandleEvent`
@@ -17,129 +16,240 @@ import { CandlesAggregator } from "./candles.aggregator.js";
  * ```ts
  * const exchange = exchangeProvider.fromCode(ExchangeCode.OKX);
  *
- * const channel = new CandlesChannel(exchange);
- * channel.add("BTC/USDT", "5m");
- * channel.add("ETH/USDT", "5m");
- * channel.add("ETH/USDT", "15m");
+ * const channel = new CandlesChannel(symbol, timeframe, exchange);
  *
- * channel.on("candle", (candle) => {
+ * channel.on("candle", (candle, history) => {
  *   logger.info(candle, "Candle received");
  * });
  * ```
  */
 export class CandlesChannel extends EventEmitter {
+  public readonly symbol: string;
+  public readonly timeframe: BarSize;
   private readonly exchange: IExchange;
-  private aggregators: CandlesAggregator[] = [];
-  private watchers: CandlesWatcher[] = [];
+  private readonly bucketSize: number;
 
-  constructor(exchange: IExchange) {
+  private enabled = false;
+  private bucket: ICandlestick[] = [];
+  private candlesHistory: ICandlestick[] = [];
+
+  constructor(symbol: string, timeframe: BarSize, exchange: IExchange) {
     super();
-
+    this.symbol = symbol;
+    this.timeframe = timeframe;
     this.exchange = exchange;
+    this.bucketSize = barSizeToDuration(timeframe) / 60000;
   }
 
-  async add(symbol: string, timeframe: BarSize, requiredHistory?: number) {
-    let aggregator = this.aggregators.find(
-      (aggregator) => aggregator.timeframe === timeframe && aggregator.symbol === symbol,
-    );
+  async init(requiredHistory?: number) {
+    if (!this.enabled) {
+      await this.downloadLastCandle();
+    }
+    if (requiredHistory) {
+      await this.warmup(requiredHistory);
+    }
+  }
 
-    // if aggregator already exists, just download required history,
-    // not need to enable it again
-    if (aggregator) {
-      logger.warn(
-        `[CandlesChannel] Candles aggregator for ${this.exchange.exchangeCode}:${symbol} with ${timeframe} timeframe already exists`,
-      );
-      await aggregator.init(requiredHistory);
+  start() {
+    if (this.enabled) return;
+    this.enabled = true;
+    this.watchCandles();
+  }
 
+  stop() {
+    this.enabled = false;
+  }
+
+  private async watchCandles() {
+    while (this.enabled) {
+      try {
+        const candles = await this.exchange.watchCandles({ symbol: this.symbol });
+        for (const candle of candles) {
+          this.handleCandle(candle);
+        }
+      } catch (err) {
+        if (err instanceof NetworkError || err instanceof RequestTimeout) {
+          logger.warn(
+            `[CandlesChannel] ${err.name} occurred in ${this.exchange.exchangeCode}:${this.symbol}:  ${err.message}. Reconnecting in 3s…`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, 3000)); // prevents infinite loop
+        } else if (err instanceof ExchangeClosedByUser) {
+          logger.info(`[CandlesChannel] ExchangeClosedByUser: ${this.exchange.exchangeCode}:${this.symbol}`); // expected error when shutting down the platform
+
+          this.stop();
+          break;
+        } else {
+          logger.error(
+            err,
+            `[CandlesChannel] Unhandled error occurred in ${this.exchange.exchangeCode}:${this.symbol}. Watcher stopped.`,
+          );
+
+          this.stop();
+          break;
+        }
+      }
+    }
+  }
+
+  private handleCandle(candle: ICandlestick) {
+    if (!this.enabled) return;
+
+    const lastCandle = this.bucket[this.bucket.length - 1];
+    if (candle.timestamp < lastCandle?.timestamp) return;
+
+    if (candle.timestamp === lastCandle?.timestamp) {
+      lastCandle.open = candle.open;
+      lastCandle.high = Math.max(candle.high, lastCandle.high);
+      lastCandle.low = Math.min(candle.low, lastCandle.low);
+      lastCandle.close = candle.close;
       return;
     }
 
-    let watcher = this.watchers.find((watcher) => watcher.symbol === symbol);
-    if (!watcher) {
-      watcher = new CandlesWatcher(symbol, this.exchange);
-
-      this.watchers.push(watcher);
-    } else {
-      logger.debug(
-        `[CandlesChannel] Watcher on ${this.exchange.exchangeCode}:${symbol} already exists. Reusing it for ${timeframe} aggregation`,
-      );
+    if (lastCandle && candle.timestamp !== lastCandle.timestamp + 60000) {
+      this.fillGaps(lastCandle, candle);
     }
 
-    aggregator = new CandlesAggregator(timeframe, watcher, this.exchange);
-    aggregator.on("candle", (candle: ICandlestick, history: ICandlestick[]) => {
-      const candleEvent: CandleEvent = {
-        exchangeCode: this.exchangeCode,
-        symbol,
-        marketId: `${this.exchangeCode}:${symbol}` as MarketId,
-        timeframe,
-        candle,
-        history,
-      };
-
-      this.emit("candle", candleEvent);
-    });
-    await aggregator.init(requiredHistory);
-    this.aggregators.push(aggregator);
-
-    // it's important to enable the aggregator first,
-    // otherwise, the watcher may emit a "candle" event
-    // to the aggregator, while not being ready
-    aggregator.enable();
-    watcher.enable();
+    this.bucket.push(candle);
+    this.aggregateIfReady();
   }
 
-  destroy() {
-    // it's important to disable watchers first
-    // otherwise, the watcher may emit a "candle" event
-    // that wthe aggregator will try to process
-    for (const watcher of this.watchers) {
-      watcher.disable();
-    }
-    this.watchers = [];
-
-    for (const aggregator of this.aggregators) {
-      aggregator.disable();
-    }
-    this.aggregators = [];
-
-    logger.debug(`[CandlesChannel] Candles channel for ${this.exchange.exchangeCode} destroyed`);
-  }
-
-  getWatchers() {
-    return this.watchers;
-  }
-
-  getAggregators() {
-    return this.aggregators;
-  }
-
-  removeAggregator(aggregator: CandlesAggregator) {
-    aggregator.disable();
-
-    const aggregatorsLengthBefore = this.aggregators.length;
-    this.aggregators = this.aggregators.filter((a) => a !== aggregator);
-
-    // @todo remove and add tests for this
-    if (aggregatorsLengthBefore === this.aggregators.length) {
-      logger.error(
-        `[CandlesChannel] Cannot remove ${this.exchangeCode}:${aggregator.symbol}#${aggregator.timeframe} aggregator. Reason: not found`,
-      );
+  private aggregateIfReady() {
+    if (this.bucket.length >= this.bucketSize + 1) {
+      const candle = this.aggregate();
+      this.candlesHistory.push(candle);
+      this.emit("candle", candle, this.candlesHistory);
     }
   }
 
-  removeWatcher(watcher: CandlesWatcher) {
-    watcher.disable();
+  private aggregate(): ICandlestick {
+    const candles = this.bucket.splice(0, this.bucketSize);
+    return {
+      open: candles[0].open,
+      high: Math.max(...candles.map((c) => c.high)),
+      low: Math.min(...candles.map((c) => c.low)),
+      close: candles[candles.length - 1].close,
+      timestamp: candles[0].timestamp,
+      volume: candles.reduce((acc, c) => acc + c.volume, 0),
+    };
+  }
 
-    const watchersLengthBefore = this.watchers.length;
-    this.watchers = this.watchers.filter((w) => w !== watcher);
+  /**
+   * Fills the gaps in the bucked with the last known candle data.
+   * @param startCandle Last candle in the bucket before the gap.
+   * @param endCandle Last candle received from the exchange.
+   */
+  private fillGaps(startCandle: ICandlestick, endCandle: ICandlestick) {
+    for (let timestamp = startCandle.timestamp + 60000; timestamp < endCandle.timestamp; timestamp += 60000) {
+      this.bucket.push({
+        timestamp,
+        open: startCandle.close,
+        high: startCandle.close,
+        low: startCandle.close,
+        close: startCandle.close,
+        volume: 0,
+      });
+    }
+    logger.warn(
+      "[CandlesChannel] Filled gaps in the bucket between" +
+        ` ${new Date(startCandle.timestamp).toDateString()} and ${new Date(endCandle.timestamp).toDateString()}` +
+        ` for ${this.exchange.exchangeCode}:${this.symbol}`,
+    );
+  }
 
-    // @todo remove
-    if (watchersLengthBefore === this.watchers.length) {
-      logger.error(`[CandlesChannel] Cannot remove ${watcher.symbol} watcher. Reason: not found`);
+  /**
+   * Downloads the last closed candle from the exchange.
+   * E.g. if timeframe is set to 1d, it will download all the 1-minute candles
+   * from the previous day and aggregate them into a single 1-day candle.
+   */
+  private async downloadLastCandle() {
+    let since = getLastClosedCandleTimestamp(this.bucketSize);
+    let minuteCandles: ICandlestick[] = [];
+    let done = false;
+
+    while (!done) {
+      const candles = await this.exchange.getCandlesticks({
+        symbol: this.symbol,
+        bar: BarSize.ONE_MINUTE,
+        since,
+      });
+
+      if (candles.length === 0) {
+        done = true;
+        continue;
+      }
+
+      minuteCandles = minuteCandles.concat(candles);
+
+      since = candles[candles.length - 1].timestamp + 60000;
+    }
+
+    this.bucket = minuteCandles;
+    while (this.bucket.length >= this.bucketSize + 1) {
+      const candle = this.aggregate();
+      this.candlesHistory.push(candle);
     }
   }
 
-  get exchangeCode() {
-    return this.exchange.exchangeCode;
+  private async warmup(requiredHistory: number) {
+    if (this.candlesHistory.length >= requiredHistory) return;
+
+    const historyCandle = this.candlesHistory[this.candlesHistory.length - 1];
+    const since = historyCandle.timestamp - 60000 * this.bucketSize * requiredHistory;
+    let minuteCandles: ICandlestick[] = [];
+    let cursor = since;
+
+    while (cursor <= historyCandle.timestamp) {
+      const candles = await this.exchange.getCandlesticks({
+        symbol: this.symbol,
+        bar: BarSize.ONE_MINUTE,
+        since: cursor,
+      });
+
+      if (candles.length === 0) break;
+
+      minuteCandles = minuteCandles.concat(candles);
+      cursor = candles[candles.length - 1].timestamp + 60000;
+    }
+
+    minuteCandles = minuteCandles.filter((candle) => candle.timestamp < historyCandle.timestamp);
+
+    const aggregatedCandles: ICandlestick[] = [];
+    while (minuteCandles.length >= this.bucketSize) {
+      const candles = minuteCandles.splice(0, this.bucketSize);
+      const candle = aggregateCandles(candles);
+      aggregatedCandles.push(candle);
+    }
+    this.candlesHistory = [...aggregatedCandles, ...this.candlesHistory];
+
+    const firstCandle = aggregatedCandles[0];
+    const lastCandle = aggregatedCandles[aggregatedCandles.length - 1];
+    logger.info(
+      `[${this.symbol}#${this.timeframe}] Warming up completed. Aggregated ${aggregatedCandles.length} candles from ${firstCandle ? new Date(firstCandle.timestamp).toISOString() : null} to ${lastCandle ? new Date(lastCandle.timestamp).toISOString() : null}`,
+    );
   }
+
+  get isDemoAccount() {
+    return this.exchange.isDemo;
+  }
+}
+
+function getLastClosedCandleTimestamp(bucketSize: number) {
+  const now = new Date();
+  now.setSeconds(0);
+  now.setMilliseconds(0);
+
+  const minutes = now.getTime() / 60000;
+  const buckets = minutes % bucketSize;
+  return (minutes - buckets - bucketSize) * 60000;
+}
+
+function aggregateCandles(candles: ICandlestick[]): ICandlestick {
+  return {
+    open: candles[0].open,
+    high: Math.max(...candles.map((candle) => candle.high)),
+    low: Math.min(...candles.map((candle) => candle.low)),
+    close: candles[candles.length - 1].close,
+    timestamp: candles[0].timestamp,
+    volume: candles.reduce((acc, candle) => acc + candle.volume, 0),
+  };
 }

@@ -1,9 +1,9 @@
 import { EventEmitter } from "node:events";
-import type { IExchange } from "@opentrader/exchanges";
+import { ExchangeClosedByUser, NetworkError, RequestTimeout } from "ccxt";
+import { MarketId, ITicker } from "@opentrader/types";
 import { logger } from "@opentrader/logger";
-import { ITicker, MarketId } from "@opentrader/types";
+import { IExchange } from "@opentrader/exchanges";
 import type { TickerEvent } from "./types.js";
-import { TickerWatcher } from "./ticker.watcher.js";
 
 /**
  * Channel that subscribes to the ticker on specific symbol.
@@ -15,72 +15,71 @@ import { TickerWatcher } from "./ticker.watcher.js";
  * ```ts
  * const exchange = exchangeProvider.fromCode(ExchangeCode.OKX);
  *
- * const channel = new TickerChannel(exchange);
- * channel.add("BTC/USDT");
- * channel.add("ETH/USDT");
- * channel.add("ETH/USDT");
+ * const channel = new TickerChannel(symbol, exchange);
  *
- * channel.on("ticker", (ticker) => {
+ * channel.on("ticker", (ticker: TickerEvent) => {
  *   logger.info(ticker, "Ticker event received");
  * });
  * ```
  */
 export class TickerChannel extends EventEmitter {
-  private readonly exchange: IExchange;
-  private watchers: TickerWatcher[] = [];
+  public readonly symbol: string;
+  private exchange: IExchange;
+  private enabled = false;
 
-  constructor(exchange: IExchange) {
+  constructor(symbol: string, exchange: IExchange) {
     super();
-
+    this.symbol = symbol;
     this.exchange = exchange;
   }
 
-  async add(symbol: string) {
-    let watcher = this.watchers.find((watcher) => watcher.symbol === symbol);
-    if (!watcher) {
-      watcher = new TickerWatcher(symbol, this.exchange);
-      watcher.on("ticker", this.handleTicker);
+  async init() {
+    if (this.enabled) return;
+    this.enabled = true;
+    this.watch();
+  }
 
-      this.watchers.push(watcher);
-    } else {
-      logger.debug(`[TickerChannel] Watcher on ${this.exchange.exchangeCode}:${symbol} already exists. Reusing it.`);
+  private async watch() {
+    while (this.enabled) {
+      try {
+        const ticker: ITicker = await this.exchange.watchTicker(this.symbol);
+        const event: TickerEvent = {
+          exchangeCode: this.exchange.exchangeCode,
+          marketId: `${this.exchange.exchangeCode}:${this.symbol}` as MarketId,
+          isDemoMarket: this.exchange.isDemo,
+          symbol: this.symbol,
+          ticker,
+        };
+        this.emit("ticker", event);
+      } catch (err) {
+        if (err instanceof NetworkError || err instanceof RequestTimeout) {
+          logger.warn(
+            `[TickerChannel] ${err.name} occurred in ${this.exchange.exchangeCode}:${this.symbol}:  ${err.message}. Reconnecting in 3s…`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, 3000)); // prevents infinite loop
+        } else if (err instanceof ExchangeClosedByUser) {
+          logger.info(`[TickerChannel] ExchangeClosedByUser: ${this.exchange.exchangeCode}:${this.symbol}`); // expected error when shutting down the platform
+
+          this.stop();
+          break;
+        } else {
+          logger.error(
+            err,
+            `[TickerChannel] Unhandled error occurred in ${this.exchange.exchangeCode}:${this.symbol}. Watcher stopped.`,
+          );
+
+          this.stop();
+          break;
+        }
+      }
     }
-
-    watcher.enable();
   }
 
-  handleTicker = (ticker: ITicker) => {
-    const event: TickerEvent = {
-      exchangeCode: this.exchangeCode,
-      marketId: `${this.exchangeCode}:${ticker.symbol}` as MarketId,
-      symbol: ticker.symbol,
-      ticker,
-    };
-
-    this.emit("ticker", event);
-  };
-
-  destroy() {
-    for (const watcher of this.watchers) {
-      watcher.off("ticker", this.handleTicker);
-      watcher.disable();
-    }
-    this.watchers = [];
-
-    logger.debug(`[TickerChannel] Channel for ${this.exchange.exchangeCode} destroyed`);
+  stop() {
+    this.enabled = false;
   }
 
-  getWatchers() {
-    return this.watchers;
-  }
-
-  removeWatcher(watcher: TickerWatcher) {
-    watcher.disable();
-
-    this.watchers = this.watchers.filter((w) => w !== watcher);
-  }
-
-  get exchangeCode() {
-    return this.exchange.exchangeCode;
+  get isDemoAccount() {
+    return this.exchange.isDemo;
   }
 }

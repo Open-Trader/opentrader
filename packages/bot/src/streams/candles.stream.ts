@@ -1,21 +1,93 @@
 import { EventEmitter } from "node:events";
-import { exchangeProvider } from "@opentrader/exchanges";
-import { logger } from "@opentrader/logger";
 import type { TBotWithExchangeAccount } from "@opentrader/db";
+import { findStrategy } from "@opentrader/bot-templates/server";
 import { getWatchers, getTimeframe, getRequiredHistory } from "@opentrader/processing";
 import { decomposeSymbolId } from "@opentrader/tools";
-import { BarSize, ExchangeCode } from "@opentrader/types";
-import { findStrategy } from "@opentrader/bot-templates/server";
-import { CandleEvent } from "../channels/index.js";
-import { CandlesChannel } from "../channels/index.js";
+import { BarSize, ExchangeCode, ICandlestick, MarketId } from "@opentrader/types";
+import { exchangeProvider } from "@opentrader/exchanges";
+import { logger } from "@opentrader/logger";
+import { CandlesChannel, type CandleEvent } from "../channels/index.js";
+
+class CandlesRegistry {
+  private channels: Map<string, CandlesChannel> = new Map();
+
+  getKey(exchangeCode: ExchangeCode, symbol: string, timeframe: string, isDemoAccount: boolean): string {
+    const demoSuffix = isDemoAccount ? "-demo" : "";
+    return `${exchangeCode}${demoSuffix}:${symbol}#${timeframe}`;
+  }
+
+  async getOrCreate(
+    exchangeCode: ExchangeCode,
+    symbol: string,
+    timeframe: BarSize,
+    isDemoAccount: boolean,
+    requiredHistory?: number,
+  ): Promise<CandlesChannel> {
+    const key = this.getKey(exchangeCode, symbol, timeframe, isDemoAccount);
+    if (this.channels.has(key)) return this.channels.get(key)!;
+
+    const exchange = exchangeProvider.fromCode(exchangeCode, isDemoAccount);
+    const channel = new CandlesChannel(symbol, timeframe, exchange);
+    await channel.init(requiredHistory);
+    channel.start();
+    this.channels.set(key, channel);
+    return channel;
+  }
+
+  getActiveKeysFromBots(bots: TBotWithExchangeAccount[]): Set<string> {
+    const activeKeys = new Set<string>();
+
+    for (const bot of bots) {
+      const { strategyFn } = findStrategy(bot.template);
+      const { watchCandles } = getWatchers(strategyFn, bot);
+      const timeframe = getTimeframe(strategyFn, bot);
+
+      if (!timeframe) {
+        logger.warn(`[CandlesRegistry]: Skip key generation [${bot.id} - ${bot.name}] - No timeframe defined.`);
+        continue;
+      }
+
+      for (const symbolId of watchCandles) {
+        const { exchangeCode, currencyPairSymbol: symbol } = decomposeSymbolId(symbolId);
+        const { isDemoAccount } = bot.exchangeAccount;
+        const key = this.getKey(exchangeCode, symbol, timeframe, isDemoAccount);
+        activeKeys.add(key);
+      }
+    }
+
+    return activeKeys;
+  }
+
+  cleanupFromBots(bots: TBotWithExchangeAccount[]) {
+    const activeKeys = this.getActiveKeysFromBots(bots);
+    this.cleanup(activeKeys);
+  }
+
+  private cleanup(activeKeys: Set<string>) {
+    for (const [key, channel] of this.channels.entries()) {
+      if (!activeKeys.has(key)) {
+        logger.info(`[CandlesRegistry] Removing stale channel for ${key}`);
+        channel.stop();
+        this.channels.delete(key);
+      }
+    }
+  }
+
+  stopAll() {
+    for (const channel of this.channels.values()) {
+      channel.stop();
+    }
+    this.channels.clear();
+  }
+}
 
 /**
  * Emits:
  * - candle: CandleEvent
  */
 export class CandlesStream extends EventEmitter {
-  private channels: CandlesChannel[] = [];
   private bots: TBotWithExchangeAccount[] = [];
+  private registry = new CandlesRegistry();
 
   constructor(bots: TBotWithExchangeAccount[]) {
     super();
@@ -28,130 +100,45 @@ export class CandlesStream extends EventEmitter {
     }
   }
 
-  /**
-   * Subscribes the bot to the candles channel.
-   * It will create the channel if necessary or reusing it if it already exists.
-   * @param bot Bot to add
-   * @returns
-   */
   async addBot(bot: TBotWithExchangeAccount) {
     const { strategyFn } = findStrategy(bot.template);
     const { watchCandles: symbols } = getWatchers(strategyFn, bot);
     const requiredHistory = getRequiredHistory(strategyFn, bot);
-
     const timeframe = getTimeframe(strategyFn, bot);
+
     if (!timeframe) {
-      logger.warn(
-        `[CandlesProcessor]: Skip adding bot [${bot.id}:"${bot.name}"] to the candles channel. Reason: The bot has no timeframe defined.`,
-      );
+      logger.warn(`[CandlesStream]: Skipping bot [${bot.id} - ${bot.name}] - No timeframe defined.`);
       return;
     }
 
     for (const symbolId of symbols) {
       const { exchangeCode, currencyPairSymbol: symbol } = decomposeSymbolId(symbolId);
+      const { isDemoAccount } = bot.exchangeAccount;
+      const key = this.registry.getKey(exchangeCode, symbol, timeframe, isDemoAccount);
 
-      const channel = this.getChannel(exchangeCode);
-      await channel.add(symbol, timeframe, requiredHistory);
-      logger.info(
-        `[CandlesProcessor]: Subscribed bot [${bot.id}:"${bot.name}"] to the ${exchangeCode}:${symbol} channel`,
-      );
-    }
-  }
-
-  /**
-   * Return existing channel or create a new one.
-   */
-  private getChannel(exchangeCode: ExchangeCode) {
-    let channel = this.channels.find((channel) => channel.exchangeCode === exchangeCode);
-    if (!channel) {
-      const exchange = exchangeProvider.fromCode(exchangeCode);
-
-      channel = new CandlesChannel(exchange);
-      this.channels.push(channel);
-
-      logger.debug(`[CandlesConsumer] Created ${exchangeCode} channel`);
-
-      // @todo type
-      channel.on("candle", this.handleCandle);
-    }
-
-    return channel;
-  }
-
-  /**
-   * Remove unused channels that are no longer used by any bots.
-   * Triggered when any bot was stopped.
-   */
-  cleanStaleChannels(bots: TBotWithExchangeAccount[]) {
-    const botsInUse: Array<{ timeframe: BarSize | null; symbols: string[]; exchangeCodes: ExchangeCode[] }> = [];
-    for (const bot of bots) {
-      const { strategyFn } = findStrategy(bot.template);
-      const { watchCandles } = getWatchers(strategyFn, bot);
-
-      botsInUse.push({
-        timeframe: getTimeframe(strategyFn, bot), // override
-        symbols: watchCandles,
-        exchangeCodes: [...new Set(watchCandles.map((symbolId) => decomposeSymbolId(symbolId).exchangeCode))],
+      const channel = await this.registry.getOrCreate(exchangeCode, symbol, timeframe, isDemoAccount, requiredHistory);
+      channel.on("candle", (candle: ICandlestick, history: ICandlestick[]) => {
+        const event: CandleEvent = {
+          exchangeCode,
+          symbol,
+          marketId: `${exchangeCode}:${symbol}` as MarketId,
+          isDemoMarket: isDemoAccount,
+          timeframe,
+          candle,
+          history,
+        };
+        this.emit("candle", event);
       });
-    }
 
-    for (const channel of this.channels) {
-      // Clean stale channels
-      const isChannelUsedByAnyBot = botsInUse.some((bot) => bot.exchangeCodes.includes(channel.exchangeCode));
-      if (!isChannelUsedByAnyBot) {
-        logger.debug(`[CandlesProcessor] Removing stale channel ${channel.exchangeCode}`);
-        this.removeChannel(channel);
-        continue; // no need to check watchers and aggregators
-      }
-
-      // Clean up stale watchers
-      for (const watcher of channel.getWatchers()) {
-        const isWatcherUsedByAnyBot = botsInUse.some((bot) =>
-          bot.symbols.includes(`${channel.exchangeCode}/${watcher.symbol}`),
-        );
-
-        if (!isWatcherUsedByAnyBot) {
-          logger.debug(`[CandlesProcessor] Removing stale watcher ${channel.exchangeCode}:${watcher.symbol}`);
-          channel.removeWatcher(watcher);
-        }
-      }
-
-      // Clean stale aggregators
-      for (const aggregator of channel.getAggregators()) {
-        const isAggregatorUsedByAnyBot = botsInUse.some(
-          (bot) =>
-            bot.symbols.includes(`${channel.exchangeCode}:${aggregator.symbol}`) &&
-            bot.timeframe === aggregator.timeframe,
-        );
-
-        if (!isAggregatorUsedByAnyBot) {
-          logger.info(
-            `[CandlesProcessor] Removing stale aggregator ${channel.exchangeCode}:${aggregator.symbol}#${aggregator.timeframe}`,
-          );
-          channel.removeAggregator(aggregator);
-        }
-      }
+      logger.info(`[CandlesStream]: Bot [${bot.id} - ${bot.name}] subscribed to ${key}`);
     }
   }
 
-  private handleCandle = async (data: CandleEvent) => {
-    this.emit("candle", data);
-  };
-
-  /**
-   * Destroy and remove the channel from the list.
-   * @param exchangeCode
-   */
-  private removeChannel(channel: CandlesChannel) {
-    channel.off("candle", this.handleCandle);
-    channel.destroy();
-
-    this.channels = this.channels.filter((c) => c !== channel);
+  cleanStaleChannels(bots: TBotWithExchangeAccount[]) {
+    this.registry.cleanupFromBots(bots);
   }
 
   destroy() {
-    for (const channel of this.channels) {
-      channel.destroy();
-    }
+    this.registry.stopAll();
   }
 }

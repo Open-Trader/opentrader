@@ -5,12 +5,12 @@ import { exchangeProvider } from "@opentrader/exchanges";
 import type { TBotWithExchangeAccount } from "@opentrader/db";
 import { xprisma } from "@opentrader/db";
 import { logger } from "@opentrader/logger";
-import type { ExchangeCode, MarketData, MarketId, MarketEventType } from "@opentrader/types";
+import type { ExchangeCode, MarketData, MarketId, StrategyEventType } from "@opentrader/types";
 import { SmartTradeExecutor } from "../executors/index.js";
 import { BotStoreAdapter } from "./bot-store-adapter.js";
 
-type ProcessParams = {
-  triggerEventType?: MarketEventType;
+type StrategyRunContext = {
+  triggerEventType?: StrategyEventType;
   market?: MarketData; // default market
   markets?: Record<MarketId, MarketData>; // additional markets
 };
@@ -40,15 +40,18 @@ export class BotProcessing {
     return new BotProcessing(bot);
   }
 
-  private async start() {
-    this.bot = await xprisma.bot.custom.update({
-      where: { id: this.bot.id },
-      data: { enabled: true },
-      include: { exchangeAccount: true },
-    });
-  }
+  /**
+   * @deprecated
+   * This function is triggered by the strategy function itself.
+   * It was intended for cases where the strategy could no longer operate
+   * (e.g. due to insufficient funds), allowing the bot to self-terminate.
+   *
+   * @todo Replace this with an EventBus-based flow by emitting a "stopBot" event,
+   * so that the shutdown logic is properly handled by the Bot instance.
+   */
+  private async markBotAsStopped() {
+    throw new Error("Stopping the bot from the strategy function is deprecated");
 
-  private async stop() {
     this.bot = await xprisma.bot.custom.update({
       where: { id: this.bot.id },
       data: { enabled: false },
@@ -56,7 +59,7 @@ export class BotProcessing {
     });
   }
 
-  private async processCommand(command: "start" | "stop" | "process", params: ProcessParams) {
+  private async processCommand(command: "start" | "stop" | "process", params: StrategyRunContext) {
     const { triggerEventType, market, markets } = params;
 
     logger.debug(
@@ -68,22 +71,22 @@ export class BotProcessing {
     );
     const t0 = Date.now();
 
-    if (this.isBotProcessing()) {
+    if (this.bot.processing) {
       console.warn(`Cannot execute "${command}()" command. The bot is busy right now by the previous processing job.`);
       return;
     }
 
-    const processor = await this.getProcessor();
+    const strategyRunner = await this.createRunner();
     const botState = this.bot.state as BotState;
 
     await xprisma.bot.setProcessing(true, this.bot.id);
     try {
       if (command === "start") {
-        await processor.start(botState);
+        await strategyRunner.start(botState);
       } else if (command === "stop") {
-        await processor.stop(botState);
+        await strategyRunner.stop(botState);
       } else if (command === "process") {
-        await processor.process(botState, triggerEventType, market, markets);
+        await strategyRunner.process(botState, triggerEventType, market, markets);
       }
     } catch (err) {
       await xprisma.bot.setProcessing(false, this.bot.id);
@@ -137,7 +140,7 @@ export class BotProcessing {
     await this.processCommand("stop", {});
   }
 
-  async process(params: ProcessParams = {}) {
+  async process(params: StrategyRunContext = {}) {
     await this.processCommand("process", params);
   }
 
@@ -147,10 +150,6 @@ export class BotProcessing {
 
   isBotStopped() {
     return !this.bot.enabled;
-  }
-
-  isBotProcessing() {
-    return this.bot.processing;
   }
 
   getBot() {
@@ -165,18 +164,14 @@ export class BotProcessing {
     return this.bot.timeframe;
   }
 
-  private async getProcessor() {
+  private async createRunner() {
     const exchangeAccount = await xprisma.exchangeAccount.findUniqueOrThrow({
-      where: {
-        id: this.bot.exchangeAccountId,
-      },
+      where: { id: this.bot.exchangeAccountId },
     });
 
     const additionalExchangeAccounts = await xprisma.exchangeAccount.findMany({
       where: {
-        bots: {
-          some: { id: this.bot.id },
-        },
+        bots: { some: { id: this.bot.id } },
       },
     });
 
@@ -192,7 +187,7 @@ export class BotProcessing {
       exchangeCode: exchangeAccount.exchangeCode as ExchangeCode,
     };
 
-    const storeAdapter = new BotStoreAdapter(() => this.stop());
+    const storeAdapter = new BotStoreAdapter(() => this.markBotAsStopped());
     const { strategyFn } = findStrategy(this.bot.template);
 
     const processor = createStrategyRunner({

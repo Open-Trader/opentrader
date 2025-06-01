@@ -1,9 +1,9 @@
 import { EventEmitter } from "node:events";
-import type { IExchange } from "@opentrader/exchanges";
+import { ExchangeClosedByUser, NetworkError, RequestTimeout } from "ccxt";
+import { MarketId, ITrade } from "@opentrader/types";
+import { IExchange } from "@opentrader/exchanges";
 import { logger } from "@opentrader/logger";
-import { ITrade, MarketId } from "@opentrader/types";
 import type { TradeEvent } from "./types.js";
-import { TradesWatcher } from "./trades.watcher.js";
 
 /**
  * Channel that subscribes to public trades on specific symbol.
@@ -15,72 +15,74 @@ import { TradesWatcher } from "./trades.watcher.js";
  * ```ts
  * const exchange = exchangeProvider.fromCode(ExchangeCode.OKX);
  *
- * const channel = new TradesChannel(exchange);
- * channel.add("BTC/USDT");
- * channel.add("ETH/USDT");
- * channel.add("ETH/USDT");
+ * const channel = new TradesChannel(symbol, exchange);
  *
- * channel.on("trade", (trade) => {
+ * channel.on("trade", (trade: TradeEvent) => {
  *   logger.info(trade, "New trade");
  * });
  * ```
  */
 export class TradesChannel extends EventEmitter {
-  private readonly exchange: IExchange;
-  private watchers: TradesWatcher[] = [];
+  public readonly symbol: string;
+  private exchange;
+  private enabled = false;
 
-  constructor(exchange: IExchange) {
+  constructor(symbol: string, exchange: IExchange) {
     super();
-
+    this.symbol = symbol;
     this.exchange = exchange;
   }
 
-  async add(symbol: string) {
-    let watcher = this.watchers.find((watcher) => watcher.symbol === symbol);
-    if (!watcher) {
-      watcher = new TradesWatcher(symbol, this.exchange);
-      watcher.on("trade", this.handleTrade);
+  async init() {
+    if (this.enabled) return;
+    this.enabled = true;
+    this.watch();
+  }
 
-      this.watchers.push(watcher);
-    } else {
-      logger.debug(`[TradesChannel] Watcher on ${this.exchange.exchangeCode}:${symbol} already exists. Reusing it.`);
+  private async watch() {
+    while (this.enabled) {
+      try {
+        const trades: ITrade[] = await this.exchange.watchTrades({ symbol: this.symbol });
+        logger.debug(
+          trades,
+          `[TradesChannel] Received ${trades.length} trades for ${this.exchange.exchangeCode}:${this.symbol}`,
+        );
+
+        for (const trade of trades) {
+          const tradeEvent: TradeEvent = {
+            exchangeCode: this.exchange.exchangeCode,
+            marketId: `${this.exchange.exchangeCode}:${this.symbol}` as MarketId,
+            isDemoMarket: this.exchange.isDemo,
+            symbol: this.symbol,
+            trade,
+          };
+          this.emit("trade", tradeEvent);
+        }
+      } catch (err) {
+        if (err instanceof NetworkError || err instanceof RequestTimeout) {
+          logger.warn(
+            `[TradesChannel] ${err.name} occurred in ${this.exchange.exchangeCode}:${this.symbol}:  ${err.message}. Reconnecting in 3s…`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, 3000)); // prevents infinite loop
+        } else if (err instanceof ExchangeClosedByUser) {
+          logger.info(`[TradesChannel] ExchangeClosedByUser: ${this.exchange.exchangeCode}:${this.symbol}`); // expected error when shutting down the platform
+
+          this.stop();
+          break;
+        } else {
+          logger.error(
+            err,
+            `[TradesChannel] Unhandled error occurred in ${this.exchange.exchangeCode}:${this.symbol}. Watcher stopped.`,
+          );
+
+          this.stop();
+          break;
+        }
+      }
     }
-
-    watcher.enable();
   }
 
-  handleTrade = (trade: ITrade) => {
-    const tradeEvent: TradeEvent = {
-      exchangeCode: this.exchangeCode,
-      marketId: `${this.exchangeCode}:${trade.symbol}` as MarketId,
-      symbol: trade.symbol,
-      trade,
-    };
-
-    this.emit("trade", tradeEvent);
-  };
-
-  destroy() {
-    for (const watcher of this.watchers) {
-      watcher.off("trade", this.handleTrade);
-      watcher.disable();
-    }
-    this.watchers = [];
-
-    logger.debug(`[TradesChannel] Trades channel for ${this.exchange.exchangeCode} destroyed`);
-  }
-
-  getWatchers() {
-    return this.watchers;
-  }
-
-  removeWatcher(watcher: TradesWatcher) {
-    watcher.disable();
-
-    this.watchers = this.watchers.filter((w) => w !== watcher);
-  }
-
-  get exchangeCode() {
-    return this.exchange.exchangeCode;
+  stop() {
+    this.enabled = false;
   }
 }
