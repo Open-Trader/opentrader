@@ -47,9 +47,19 @@ export class OrderSynchronizerPollingWatcher extends OrderSynchronizerWatcher {
     try {
       await processor.syncOrders({
         onFilled: (exchangeOrder, order) =>
-          this.emit("onFilled", [exchangeOrder, order, this.exchange.exchangeCode as ExchangeCode]),
+          this.emit("onFilled", [
+            exchangeOrder,
+            order,
+            this.exchange.exchangeCode as ExchangeCode,
+            this.exchange.isDemoAccount,
+          ]),
         onCanceled: (exchangeOrder, order) =>
-          this.emit("onCanceled", [exchangeOrder, order, this.exchange.exchangeCode as ExchangeCode]),
+          this.emit("onCanceled", [
+            exchangeOrder,
+            order,
+            this.exchange.exchangeCode as ExchangeCode,
+            this.exchange.isDemoAccount,
+          ]),
       });
     } catch (err) {
       if (err instanceof NetworkError) {

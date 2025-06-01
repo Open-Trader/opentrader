@@ -37,6 +37,10 @@ export class ExchangeProvider {
    * Public exchanges. Allowed to access only public endpoints.
    */
   private publicExchanges: Partial<Record<ExchangeCode, IExchange>> = {};
+  /**
+   * Demo public exchanges.
+   */
+  private demoPublicExchanges: Partial<Record<ExchangeCode, IExchange>> = {};
 
   fromAccount(exchangeAccount: ExchangeAccountWithCredentials): IExchange {
     const { id, exchangeCode, credentials } = exchangeAccount;
@@ -51,11 +55,14 @@ export class ExchangeProvider {
     }
 
     // Create new exchange instance
-    const newExchange = exchanges[exchangeCode as ExchangeCode]({
-      ...credentials,
-      code: credentials.code as ExchangeCode,
-      password: credentials.password ?? "",
-    });
+    const newExchange = exchanges[exchangeCode as ExchangeCode](
+      {
+        ...credentials,
+        code: credentials.code as ExchangeCode,
+        password: credentials.password ?? "",
+      },
+      credentials.isDemoAccount,
+    );
 
     this.privateExchanges[id] = newExchange; // cache it
 
@@ -66,9 +73,9 @@ export class ExchangeProvider {
     return newExchange;
   }
 
-  fromCode(exchangeCode: ExchangeCode) {
+  fromCode(exchangeCode: ExchangeCode, isDemo: boolean) {
     // Return cached if instance available
-    const cachedExchange = this.publicExchanges[exchangeCode];
+    const cachedExchange = isDemo ? this.demoPublicExchanges[exchangeCode] : this.publicExchanges[exchangeCode];
     if (cachedExchange) {
       // console.log(
       //   `🔌 ExchangeProvider: Reused cached public instance of ${exchangeCode}`,
@@ -77,9 +84,13 @@ export class ExchangeProvider {
     }
 
     // Create new exchange instance
-    const newExchange = exchanges[exchangeCode]();
+    const newExchange = exchanges[exchangeCode](undefined, isDemo);
 
-    this.publicExchanges[exchangeCode] = newExchange; // cache it
+    if (isDemo) {
+      this.demoPublicExchanges[exchangeCode] = newExchange;
+    } else {
+      this.publicExchanges[exchangeCode] = newExchange;
+    }
 
     // console.debug(
     //   `ExchangeProvider: Created a new public instance of ${exchangeCode}`,
@@ -91,9 +102,7 @@ export class ExchangeProvider {
   removeByAccountId(id: ExchangeAccountId) {
     const exchange = this.privateExchanges[id];
     if (!exchange) {
-      console.warn(
-        `⚠️ Unable to remove private exchange instance: No exchange found with ID "${id}".`
-      );
+      console.warn(`⚠️ Unable to remove private exchange instance: No exchange found with ID "${id}".`);
       return;
     }
 

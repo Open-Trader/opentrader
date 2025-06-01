@@ -35,6 +35,7 @@ import type { Market, Exchange } from "ccxt";
 
 export interface IExchange {
   isPaper: boolean;
+  isDemo: boolean;
 
   ccxt: Exchange;
   exchangeCode: ExchangeCode;

@@ -36,6 +36,7 @@ export class MemoryExchange implements IExchange {
   ccxt = {} as any;
   exchangeCode = ExchangeCode.OKX;
   isPaper = false;
+  isDemo = false;
 
   /**
    * @internal
@@ -52,12 +53,16 @@ export class MemoryExchange implements IExchange {
     return [];
   }
 
-  async getLimitOrder(_body: IGetLimitOrderRequest): Promise<IGetLimitOrderResponse> {
+  async getLimitOrder(data: IGetLimitOrderRequest): Promise<IGetLimitOrderResponse> {
     return {
+      symbol: data.symbol,
       exchangeOrderId: "",
       clientOrderId: "",
       price: 0,
       quantity: 1,
+      quantityExecuted: 1,
+      volume: 0,
+      volumeExecuted: 0,
       side: "buy",
       status: "filled",
       fee: 0,

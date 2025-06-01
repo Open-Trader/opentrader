@@ -9,7 +9,7 @@ type Options = {
 
 export async function getCandles(opts: Options) {
   const { input } = opts;
-  const exchangeService = exchangeProvider.fromCode(input.exchangeCode);
+  const exchangeService = exchangeProvider.fromCode(input.exchangeCode, input.isDemoAccount);
 
   const symbols = await exchangeService.ccxt.fetchOHLCV(input.symbol, input.barSize, input.since, input.limit);
 

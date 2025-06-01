@@ -11,10 +11,8 @@ type Options = {
 export async function getSymbolPrice(opts: Options) {
   const { input } = opts;
 
-  const { exchangeCode, currencyPairSymbol } = decomposeSymbolId(
-    input.symbolId,
-  );
-  const exchangeService = exchangeProvider.fromCode(exchangeCode);
+  const { exchangeCode, currencyPairSymbol } = decomposeSymbolId(input.symbolId);
+  const exchangeService = exchangeProvider.fromCode(exchangeCode, input.isDemoAccount);
 
   const price = await exchangeService.getMarketPrice({
     symbol: currencyPairSymbol,

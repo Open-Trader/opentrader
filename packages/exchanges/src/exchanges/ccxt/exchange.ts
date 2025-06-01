@@ -59,11 +59,13 @@ import { exchangeCodeMapCCXT } from "../../client/constants.js";
 
 export class CCXTExchange implements IExchange {
   public isPaper = false;
+  public isDemo = false;
   public exchangeCode: ExchangeCode;
   public ccxt: Exchange;
 
-  constructor(exchangeCode: ExchangeCode, credentials?: IExchangeCredentials) {
+  constructor(exchangeCode: ExchangeCode, credentials?: IExchangeCredentials, isDemoAccount?: boolean) {
     this.exchangeCode = exchangeCode;
+    this.isDemo = !!(credentials?.isDemoAccount || isDemoAccount);
 
     const ccxtCredentials = credentials
       ? {
@@ -82,7 +84,7 @@ export class CCXTExchange implements IExchange {
     this.ccxt.AbortError = DOMException; // when fetch request aborted
     this.ccxt.verbose = process.env.CCXT_VERBOSE === "true";
 
-    if (credentials?.isDemoAccount) {
+    if (this.isDemo) {
       this.ccxt.setSandboxMode(true);
     }
   }

@@ -12,18 +12,21 @@ export type CandleClosedMarketEvent = {
 export type PublicTradeMarketEvent = {
   type: typeof MarketEventType.onPublicTrade;
   marketId: MarketId;
+  isDemoMarket: boolean;
   trade: ITrade;
 };
 
 export type OrderbookChangeMarketEvent = {
   type: typeof MarketEventType.onOrderbookChange;
   marketId: MarketId;
+  isDemoMarket: boolean;
   orderbook: IOrderbook;
 };
 
 export type TickerChangeMarketEvent = {
   type: typeof MarketEventType.onTickerChange;
   marketId: MarketId;
+  isDemoMarket: boolean;
   ticker: ITicker;
 };
 

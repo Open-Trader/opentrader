@@ -7,7 +7,7 @@ export const ZGetCandlesInputSchema = z.object({
   barSize: z.nativeEnum(BarSize),
   since: z.number().describe("Timestamp in ms"),
   limit: z.number().optional(),
-  // @todo isDemoAccount
+  isDemoAccount: z.boolean(),
 });
 
 export type TGetCandlesInputSchema = z.infer<typeof ZGetCandlesInputSchema>;

@@ -77,13 +77,23 @@ export class OrderSynchronizerWsWatcher extends OrderSynchronizerWatcher {
             const statusChanged = order.status !== "Filled";
 
             if (statusChanged) {
-              this.emit("onFilled", [actualExchangeOrder, order, this.exchange.exchangeCode as ExchangeCode]);
+              this.emit("onFilled", [
+                actualExchangeOrder,
+                order,
+                this.exchange.exchangeCode as ExchangeCode,
+                this.exchange.isDemoAccount,
+              ]);
             }
           } else if (actualExchangeOrder.status === "canceled") {
             const statusChanged = order.status !== "Canceled";
 
             if (statusChanged) {
-              this.emit("onCanceled", [actualExchangeOrder, order, this.exchange.exchangeCode as ExchangeCode]);
+              this.emit("onCanceled", [
+                actualExchangeOrder,
+                order,
+                this.exchange.exchangeCode as ExchangeCode,
+                this.exchange.isDemoAccount,
+              ]);
             }
           }
         }

@@ -11,10 +11,10 @@ type Options = {
 };
 
 export async function getFormOptions({ input }: Options) {
-  const { symbolId } = input;
+  const { symbolId, isDemoAccount } = input;
   const { exchangeCode, currencyPairSymbol } = decomposeSymbolId(symbolId);
 
-  const exchange = exchangeProvider.fromCode(exchangeCode);
+  const exchange = exchangeProvider.fromCode(exchangeCode, isDemoAccount);
 
   const { price } = await exchange.getMarketPrice({
     symbol: currencyPairSymbol,

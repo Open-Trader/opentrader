@@ -11,6 +11,7 @@ export type OrderEvent = {
   exchangeOrder: IWatchOrder;
   order: OrderWithSmartTrade;
   exchangeCode: ExchangeCode;
+  isDemoMarket: boolean;
 };
 
 /**
@@ -82,10 +83,17 @@ export class OrdersStream extends EventEmitter {
     }
   }
 
-  private async onOrderFilled(exchangeOrder: IWatchOrder, order: OrderWithSmartTrade, exchangeCode: ExchangeCode) {
+  private async onOrderFilled(
+    exchangeOrder: IWatchOrder,
+    order: OrderWithSmartTrade,
+    exchangeCode: ExchangeCode,
+    isDemoMarket: boolean,
+  ) {
+    const { baseCurrency, quoteCurrency } = decomposeSymbol(order.symbol);
     logger.info(
-      `🔋 [${exchangeCode}] onOrderFilled: Order #${order.id}: ${order.exchangeOrderId} was filled with price ${exchangeOrder.filledPrice} at ${exchangeOrder.lastTradeTimestamp} timestamp`,
+      `🔋 Filled ${order.entityType} of [ST - ${order.smartTrade.ref}]. ${order.side === "Buy" ? "Bought" : "Sold"} ${order.quantity} ${baseCurrency} for ${order.quantity * exchangeOrder.filledPrice!} ${quoteCurrency} at ${exchangeOrder.filledPrice}`,
     );
+
     const updatedOrder = await xprisma.order.updateStatusToFilled({
       orderId: order.id,
       filledPrice: exchangeOrder.filledPrice,
@@ -98,27 +106,41 @@ export class OrdersStream extends EventEmitter {
       exchangeOrder,
       order: updatedOrder,
       exchangeCode,
+      isDemoMarket,
     } satisfies OrderEvent);
   }
 
-  private async onOrderCanceled(exchangeOrder: IWatchOrder, order: OrderWithSmartTrade, exchangeCode: ExchangeCode) {
+  private async onOrderCanceled(
+    exchangeOrder: IWatchOrder,
+    order: OrderWithSmartTrade,
+    exchangeCode: ExchangeCode,
+    isDemoMarket: boolean,
+  ) {
     // Edge case: the user may cancel the order manually on the exchange
     const updatedOrder = await xprisma.order.updateStatus("Canceled", order.id);
-    logger.info(`❌  onOrderCanceled: Order #${order.id}: ${order.exchangeOrderId} was canceled`);
+    logger.info(
+      `❌  Cancelled ${order.entityType} of [ST - ${order.smartTrade.ref}, ExchangeOrderId: ${order.exchangeOrderId}]`,
+    );
 
     this.emit("order", {
       type: "onCanceled",
       exchangeOrder,
       order: updatedOrder,
       exchangeCode,
+      isDemoMarket,
     } satisfies OrderEvent);
   }
 
-  private async onOrderPlaced(exchangeOrder: IWatchOrder, order: OrderWithSmartTrade, exchangeCode: ExchangeCode) {
+  private async onOrderPlaced(
+    exchangeOrder: IWatchOrder,
+    order: OrderWithSmartTrade,
+    exchangeCode: ExchangeCode,
+    isDemoMarket: boolean,
+  ) {
     // Edge case: the user could change the price of the order on the Exchange
-    const { quoteCurrency } = decomposeSymbol(order.symbol);
+    const { baseCurrency, quoteCurrency } = decomposeSymbol(order.symbol);
     logger.info(
-      `⬆️  onOrderPlaced: Placed ${order.symbol} order at ${exchangeOrder.price} ${quoteCurrency} (id: ${order.id}, eid: ${order.exchangeOrderId})`,
+      `⬆️ Placed ${order.entityType} of [ST - ${order.smartTrade.ref}]. ${order.side} ${order.quantity} ${baseCurrency} for ${order.quantity * exchangeOrder.price} ${quoteCurrency} at ${exchangeOrder.price}`,
     );
 
     this.emit("order", {
@@ -126,6 +148,7 @@ export class OrdersStream extends EventEmitter {
       exchangeOrder,
       order,
       exchangeCode,
+      isDemoMarket,
     } satisfies OrderEvent);
 
     // Order was possibly replaced.

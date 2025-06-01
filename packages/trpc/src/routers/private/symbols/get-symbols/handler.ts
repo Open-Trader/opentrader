@@ -8,8 +8,8 @@ type Options = {
 };
 
 export async function getSymbols(opts: Options) {
-  const { input: exchangeCode } = opts;
-  const exchangeService = exchangeProvider.fromCode(exchangeCode);
+  const { input } = opts;
+  const exchangeService = exchangeProvider.fromCode(input.exchangeCode, input.isDemoAccount);
 
   const symbols = await exchangeService.getSymbols();
 
