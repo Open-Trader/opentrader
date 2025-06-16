@@ -62,7 +62,7 @@
     "@prisma/client": "6.9.0",
     "@trpc/client": "^10.45.2",
     "@trpc/server": "^10.45.2",
-    "ccxt": "4.4.41",
+    "ccxt": "4.4.89",
     "commander": "^12.1.0",
     "execa": "^9.5.2",
     "express": "^4.21.2",
