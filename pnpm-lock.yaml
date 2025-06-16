@@ -83,11 +83,11 @@ importers:
         specifier: 6.9.0
         version: 6.9.0(prisma@6.9.0(typescript@5.8.3))(typescript@5.8.3)
       "@trpc/client":
-        specifier: ^10.45.2
-        version: 10.45.2(@trpc/server@10.45.2)
+        specifier: ^11.4.1
+        version: 11.4.1(@trpc/server@11.4.1(typescript@5.8.3))(typescript@5.8.3)
       "@trpc/server":
-        specifier: ^10.45.2
-        version: 10.45.2
+        specifier: ^11.4.1
+        version: 11.4.1(typescript@5.8.3)
       ccxt:
         specifier: 4.4.89
         version: 4.4.89
@@ -337,11 +337,11 @@ importers:
         specifier: workspace:*
         version: link:../trpc
       "@trpc/client":
-        specifier: ^10.45.2
-        version: 10.45.2(@trpc/server@10.45.2)
+        specifier: ^11.4.1
+        version: 11.4.1(@trpc/server@11.4.1(typescript@5.8.3))(typescript@5.8.3)
       "@trpc/server":
-        specifier: ^10.45.2
-        version: 10.45.2
+        specifier: ^11.4.1
+        version: 11.4.1(typescript@5.8.3)
       fastify:
         specifier: ^5.3.2
         version: 5.4.0
@@ -637,8 +637,8 @@ importers:
         specifier: workspace:*
         version: link:../tools
       "@trpc/server":
-        specifier: ^10.45.2
-        version: 10.45.2
+        specifier: ^11.4.1
+        version: 11.4.1(typescript@5.8.3)
       ccxt:
         specifier: 4.4.89
         version: 4.4.89
@@ -1522,15 +1522,18 @@ packages:
     resolution:
       { integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g== }
 
-  "@trpc/client@10.45.2":
+  "@trpc/client@11.4.1":
     resolution:
-      { integrity: sha512-ykALM5kYWTLn1zYuUOZ2cPWlVfrXhc18HzBDyRhoPYN0jey4iQHEFSEowfnhg1RvYnrAVjNBgHNeSAXjrDbGwg== }
+      { integrity: sha512-h28HKqxOBu35Q3f7h2chOjkQnwmIFdZDqG6NxovPaxEGcUmQWdo63mthlPSiMThXpy9J1AUA8q4uZZ4a5d1JVA== }
     peerDependencies:
-      "@trpc/server": 10.45.2
+      "@trpc/server": 11.4.1
+      typescript: ">=5.7.2"
 
-  "@trpc/server@10.45.2":
+  "@trpc/server@11.4.1":
     resolution:
-      { integrity: sha512-wOrSThNNE4HUnuhJG6PfDRp4L2009KDVxsd+2VYH8ro6o/7/jwYZ8Uu5j+VaW+mOmc8EHerHzGcdbGNQSAUPgg== }
+      { integrity: sha512-2C7VWfOzjZUoQpQEhBTNNbyzPW429ielchJdUGPhaczWhlHH4+9M7KLIZDkxmBdx/DkDwPxdA2OX5No3TfmJkQ== }
+    peerDependencies:
+      typescript: ">=5.7.2"
 
   "@tsconfig/node10@1.0.11":
     resolution:
@@ -4700,11 +4703,14 @@ snapshots:
 
   "@standard-schema/utils@0.3.0": {}
 
-  "@trpc/client@10.45.2(@trpc/server@10.45.2)":
+  "@trpc/client@11.4.1(@trpc/server@11.4.1(typescript@5.8.3))(typescript@5.8.3)":
     dependencies:
-      "@trpc/server": 10.45.2
+      "@trpc/server": 11.4.1(typescript@5.8.3)
+      typescript: 5.8.3
 
-  "@trpc/server@10.45.2": {}
+  "@trpc/server@11.4.1(typescript@5.8.3)":
+    dependencies:
+      typescript: 5.8.3
 
   "@tsconfig/node10@1.0.11": {}
 
