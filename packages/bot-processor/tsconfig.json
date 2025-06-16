@@ -4,7 +4,6 @@
     "baseUrl": ".",
     "outDir": "../../dts/packages/bot-processor",
     "paths": {
-      "@opentrader/eslint/*": ["../eslint/*"],
       "@opentrader/exchanges": ["../exchanges/src/index.ts"],
       "@opentrader/exchanges/*": ["../exchanges/src/*"],
       "@opentrader/indicators": ["../indicators/src/index.ts"],
@@ -18,23 +17,10 @@
   },
   "include": ["src/**/*"],
   "references": [
-    {
-      "path": "../eslint"
-    },
-    {
-      "path": "../exchanges"
-    },
-    {
-      "path": "../indicators"
-    },
-    {
-      "path": "../tools"
-    },
-    {
-      "path": "../tsconfig"
-    },
-    {
-      "path": "../types"
-    }
+    { "path": "../exchanges" },
+    { "path": "../indicators" },
+    { "path": "../tools" },
+    { "path": "../tsconfig" },
+    { "path": "../types" }
   ]
 }

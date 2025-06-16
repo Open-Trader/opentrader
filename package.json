@@ -21,6 +21,7 @@
     "execa": "^9.5.2",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
+    "oxlint": "^1.1.0",
     "prettier": "^3.4.2",
     "prettier-plugin-prisma": "^5.0.0",
     "ts-node": "10.9.2",
@@ -31,8 +32,8 @@
   "scripts": {
     "dev": "moon run :dev",
     "build": "moon run :build",
-    "lint": "moon run :lint",
-    "lint:fix": "moon run :lint-fix",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
     "test": "vitest",
     "typecheck": "moon run :typecheck",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
@@ -42,6 +43,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
+      "oxlint",
       "prettier --write"
     ],
     "*.{json,md,yml,yaml}": [

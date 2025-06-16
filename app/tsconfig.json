@@ -16,7 +16,6 @@
       "@opentrader/daemon/*": ["../packages/daemon/src/*"],
       "@opentrader/db": ["../packages/db/src/index.ts"],
       "@opentrader/db/*": ["../packages/db/src/*"],
-      "@opentrader/eslint/*": ["../packages/eslint/*"],
       "@opentrader/exchanges": ["../packages/exchanges/src/index.ts"],
       "@opentrader/exchanges/*": ["../packages/exchanges/src/*"],
       "@opentrader/logger": ["../packages/logger/src/index.ts"],
@@ -53,9 +52,6 @@
     },
     {
       "path": "../packages/db"
-    },
-    {
-      "path": "../packages/eslint"
     },
     {
       "path": "../packages/exchanges"

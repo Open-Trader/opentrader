@@ -4,35 +4,17 @@
     "baseUrl": ".",
     "outDir": "../../dts/packages/event-bus",
     "paths": {
-      "@opentrader/db": [
-        "../db/src/index.ts"
-      ],
-      "@opentrader/db/*": [
-        "../db/src/*"
-      ],
-      "@opentrader/eslint/*": [
-        "../eslint/*"
-      ],
-      "@opentrader/tsconfig/*": [
-        "../tsconfig/*"
-      ],
-      "@opentrader/types": [
-        "../types/src/index.ts"
-      ],
-      "@opentrader/types/*": [
-        "../types/src/*"
-      ]
+      "@opentrader/db": ["../db/src/index.ts"],
+      "@opentrader/db/*": ["../db/src/*"],
+      "@opentrader/tsconfig/*": ["../tsconfig/*"],
+      "@opentrader/types": ["../types/src/index.ts"],
+      "@opentrader/types/*": ["../types/src/*"]
     }
   },
-  "include": [
-    "src/**/*"
-  ],
+  "include": ["src/**/*"],
   "references": [
     {
       "path": "../db"
-    },
-    {
-      "path": "../eslint"
     },
     {
       "path": "../tsconfig"

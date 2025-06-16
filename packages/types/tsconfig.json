@@ -4,21 +4,11 @@
     "baseUrl": ".",
     "outDir": "../../dts/packages/types",
     "paths": {
-      "@opentrader/eslint/*": [
-        "../eslint/*"
-      ],
-      "@opentrader/tsconfig/*": [
-        "../tsconfig/*"
-      ]
+      "@opentrader/tsconfig/*": ["../tsconfig/*"]
     }
   },
-  "include": [
-    "src/**/*"
-  ],
+  "include": ["src/**/*"],
   "references": [
-    {
-      "path": "../eslint"
-    },
     {
       "path": "../tsconfig"
     }

@@ -24,9 +24,6 @@
       "path": "packages/db"
     },
     {
-      "path": "packages/eslint"
-    },
-    {
       "path": "packages/event-bus"
     },
     {

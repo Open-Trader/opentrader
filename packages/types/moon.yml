@@ -1,7 +1,7 @@
 tasks:
   lint:
-    command: eslint . --quiet
+    command: oxlint
   lint-fix:
-    command: eslint . --fix
+    command: oxlint --fix
   typecheck:
     command: tsc --noEmit

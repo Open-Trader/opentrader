@@ -8,7 +8,6 @@
       "@opentrader/bot-templates/*": ["../bot-templates/src/*"],
       "@opentrader/db": ["../db/src/index.ts"],
       "@opentrader/db/*": ["../db/src/*"],
-      "@opentrader/eslint/*": ["../eslint/*"],
       "@opentrader/event-bus": ["../event-bus/src/index.ts"],
       "@opentrader/event-bus/*": ["../event-bus/src/*"],
       "@opentrader/exchanges": ["../exchanges/src/index.ts"],
@@ -28,7 +27,6 @@
   "references": [
     { "path": "../bot-templates" },
     { "path": "../db" },
-    { "path": "../eslint" },
     { "path": "../event-bus" },
     { "path": "../exchanges" },
     { "path": "../logger" },

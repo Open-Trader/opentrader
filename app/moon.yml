@@ -3,13 +3,13 @@ tasks:
     command: tsup
     platform: node
     inputs:
-      - 'src/**/*'
-      - 'package.json'
-      - 'tsconfig.json'
-      - 'tsup.config.ts'
-      - '/packages/*/src/**'
+      - "src/**/*"
+      - "package.json"
+      - "tsconfig.json"
+      - "tsup.config.ts"
+      - "/packages/*/src/**"
     outputs:
-      - 'dist'
+      - "dist"
   dts:
     # Bug: The `--external-imports` doesn't have effect on the `ccxt` lib.
     # So the references to `ccxt` types are not imported in the generated `main.d.ts` file.
@@ -19,12 +19,12 @@ tasks:
       'echo -e "import { Exchange, Market } from \"ccxt\";\n$(cat dist/main.d.ts)" > dist/main.d.ts' && \
       tsc --noEmit dist/main.d.ts --skipLibCheck
     inputs:
-      - 'src/**/*'
+      - "src/**/*"
     outputs:
-      - 'dist/main.d.ts'
+      - "dist/main.d.ts"
   lint:
-    command: eslint . --quiet
+    command: oxlint
   lint-fix:
-    command: eslint . --fix
+    command: oxlint --fix
   typecheck:
     command: tsc --noEmit
