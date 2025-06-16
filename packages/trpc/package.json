@@ -14,7 +14,7 @@
     "@opentrader/types": "workspace:*",
     "@types/node": "^22.10.2",
     "eslint": "8.57.0",
-    "typescript": "5.7.2"
+    "typescript": "5.8.3"
   },
   "dependencies": {
     "@opentrader/backtesting": "workspace:*",
