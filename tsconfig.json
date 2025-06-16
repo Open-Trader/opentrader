@@ -15,9 +15,6 @@
       "path": "packages/bot-processor"
     },
     {
-      "path": "packages/bot-store"
-    },
-    {
       "path": "packages/bot-templates"
     },
     {

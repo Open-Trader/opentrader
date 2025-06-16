@@ -4,8 +4,6 @@
     "baseUrl": ".",
     "outDir": "../../dts/packages/bot",
     "paths": {
-      "@opentrader/bot-store": ["../bot-store/src/index.ts"],
-      "@opentrader/bot-store/*": ["../bot-store/src/*"],
       "@opentrader/bot-templates": ["../bot-templates/src/index.ts"],
       "@opentrader/bot-templates/*": ["../bot-templates/src/*"],
       "@opentrader/db": ["../db/src/index.ts"],
@@ -28,7 +26,6 @@
   },
   "include": ["src/**/*"],
   "references": [
-    { "path": "../bot-store" },
     { "path": "../bot-templates" },
     { "path": "../db" },
     { "path": "../eslint" },
