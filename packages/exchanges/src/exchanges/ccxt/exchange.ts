@@ -48,8 +48,9 @@ import type {
   IWatchTradesResponse,
   IOrderbook,
   ITicker,
+  ITrade,
 } from "@opentrader/types";
-import { pro } from "ccxt";
+import { pro, exchanges } from "ccxt";
 import type { Market, Exchange } from "ccxt";
 import type { IExchange, IExchangeCredentials } from "../../types/index.js";
 import { cache } from "../../cache.js";
@@ -62,6 +63,11 @@ export class CCXTExchange implements IExchange {
   public isDemo = false;
   public exchangeCode: ExchangeCode;
   public ccxt: Exchange;
+
+  // Polling requests for exchanges that does not support sockets
+  private tickerRequest: Record<string, Promise<ITicker> | null> = {};
+  private orderbookRequest: Record<string, Promise<IOrderbook> | null> = {};
+  private tradesRequest: Record<string, Promise<ITrade[]> | null> = {};
 
   constructor(exchangeCode: ExchangeCode, credentials?: IExchangeCredentials, isDemoAccount?: boolean) {
     this.exchangeCode = exchangeCode;
@@ -76,7 +82,12 @@ export class CCXTExchange implements IExchange {
       : undefined;
 
     const ccxtClassName = exchangeCodeMapCCXT[exchangeCode];
-    this.ccxt = new pro[ccxtClassName](ccxtCredentials);
+
+    // If the exchange is listed in the `pro` object, it does support sockets.
+    this.ccxt =
+      ccxtClassName in pro
+        ? new pro[ccxtClassName as keyof typeof pro](ccxtCredentials)
+        : new exchanges[ccxtClassName](ccxtCredentials);
 
     this.ccxt.fetchImplementation = fetcher; // #57
     // #88 Fixes: 'e instanceof this.AbortError' is not an object
@@ -236,22 +247,62 @@ export class CCXTExchange implements IExchange {
 
   async watchTrades(params: IWatchTradesRequest): Promise<IWatchTradesResponse> {
     const args = normalize.watchTrades.request(params);
-    const data = await this.ccxt.watchTrades(...args);
+    if (this.ccxt.has.watchTrades) {
+      const data = await this.ccxt.watchTrades(...args);
+      return normalize.watchTrades.response(data);
+    }
 
-    return normalize.watchTrades.response(data);
+    if (!this.tradesRequest[params.symbol]) {
+      this.tradesRequest[params.symbol] = delay(5000)
+        .then(() => {
+          return this.ccxt.fetchTrades(...args).then(normalize.watchTrades.response);
+        })
+        .finally(() => {
+          this.tradesRequest[params.symbol] = null;
+        });
+    }
+    return this.tradesRequest[params.symbol]!;
   }
 
   async watchOrderbook(symbol: string): Promise<IOrderbook> {
     const args = normalize.watchOrderbook.request(symbol);
-    const data = await this.ccxt.watchOrderBook(...args);
+    if (this.ccxt.has.watchOrderBook) {
+      const data = await this.ccxt.watchOrderBook(...args);
+      return normalize.watchOrderbook.response(data);
+    }
 
-    return normalize.watchOrderbook.response(data);
+    if (!this.orderbookRequest[symbol]) {
+      this.orderbookRequest[symbol] = delay(1000)
+        .then(() => {
+          return this.ccxt.fetchOrderBook(...args).then(normalize.watchOrderbook.response);
+        })
+        .finally(() => {
+          this.orderbookRequest[symbol] = null;
+        });
+    }
+    return this.orderbookRequest[symbol];
   }
 
   async watchTicker(symbol: string): Promise<ITicker> {
     const args = normalize.watchTicker.request(symbol);
-    const data = await this.ccxt.watchTicker(...args);
+    if (this.ccxt.has.watchTicker) {
+      const data = await this.ccxt.watchTicker(...args);
+      return normalize.watchTicker.response(data);
+    }
 
-    return normalize.watchTicker.response(data);
+    if (!this.tickerRequest[symbol]) {
+      this.tickerRequest[symbol] = delay(5000)
+        .then(() => {
+          return this.ccxt.fetchTicker(...args).then(normalize.watchTicker.response);
+        })
+        .finally(() => {
+          this.tickerRequest[symbol] = null;
+        });
+    }
+    return this.tickerRequest[symbol];
   }
+}
+
+function delay(timeout: number) {
+  return new Promise((resolve) => setTimeout(resolve, timeout));
 }

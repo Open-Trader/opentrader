@@ -20,6 +20,7 @@ import { ExchangeAccountProcessor } from "@opentrader/processing";
 import { logger } from "@opentrader/logger";
 import { OrderSynchronizerWatcher } from "./order-synchronizer-watcher.abstract.js";
 import { ExchangeCode } from "@opentrader/types";
+import { ExchangeAccountWithCredentials } from "@opentrader/db";
 
 /**
  * This is a fallback for `OrderSynchronizerWsWatcher`.
@@ -29,14 +30,19 @@ import { ExchangeCode } from "@opentrader/types";
  */
 export class OrderSynchronizerPollingWatcher extends OrderSynchronizerWatcher {
   protocol = "http" as const;
+  interval: number;
+
+  constructor(exchangeAccount: ExchangeAccountWithCredentials) {
+    super(exchangeAccount);
+    this.interval = this.exchangeService.ccxt.has.watchOrders ? 60000 : 3000;
+  }
 
   protected async watchOrders() {
     while (this.enabled) {
       await this.syncOrders();
 
-      // timeout 60s
-      logger.debug(`Sync ended. Timeout for 60s`);
-      await new Promise((resolve) => setTimeout(resolve, 60000));
+      logger.debug(`[${this.exchange.name}] Sync ended. Timeout for ${this.interval}ms`);
+      await new Promise((resolve) => setTimeout(resolve, this.interval));
     }
   }
 

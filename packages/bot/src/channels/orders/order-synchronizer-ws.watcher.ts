@@ -16,7 +16,14 @@
  * Repository URL: https://github.com/bludnic/opentrader
  */
 import { xprisma } from "@opentrader/db";
-import { AuthenticationError, ExchangeClosedByUser, ExchangeError, NetworkError, RequestTimeout } from "ccxt";
+import {
+  AuthenticationError,
+  ExchangeClosedByUser,
+  ExchangeError,
+  NetworkError,
+  NotSupported,
+  RequestTimeout,
+} from "ccxt";
 import { logger } from "@opentrader/logger";
 import { OrderSynchronizerWatcher } from "./order-synchronizer-watcher.abstract.js";
 import { ExchangeCode } from "@opentrader/types";
@@ -103,7 +110,13 @@ export class OrderSynchronizerWsWatcher extends OrderSynchronizerWatcher {
           }
         }
       } catch (err) {
-        if (err instanceof AuthenticationError || err instanceof ExchangeError) {
+        if (err instanceof NotSupported) {
+          logger.warn(
+            `[OrderSynchronizerWs] ${this.exchange.name} does not support watchOrders via WS. Polling mechanism will be used.`,
+          );
+          await this.disable();
+          break;
+        } else if (err instanceof AuthenticationError || err instanceof ExchangeError) {
           logger.warn(
             `[OrderSynchronizerWs] API keys for "${this.exchange.name}" have expired or are invalid: ${err.message}`,
           );
