@@ -59,7 +59,7 @@
     "@opentrader/processing": "workspace:*",
     "@opentrader/tools": "workspace:*",
     "@opentrader/trpc": "workspace:*",
-    "@prisma/client": "6.0.1",
+    "@prisma/client": "6.9.0",
     "@trpc/client": "^10.45.2",
     "@trpc/server": "^10.45.2",
     "ccxt": "4.4.41",
