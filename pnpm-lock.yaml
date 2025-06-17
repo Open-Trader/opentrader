@@ -70,9 +70,6 @@ importers:
       "@opentrader/logger":
         specifier: workspace:*
         version: link:../packages/logger
-      "@opentrader/processing":
-        specifier: workspace:*
-        version: link:../packages/processing
       "@opentrader/tools":
         specifier: workspace:*
         version: link:../packages/tools

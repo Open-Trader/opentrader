@@ -54,7 +54,6 @@
     "@opentrader/db": "workspace:*",
     "@opentrader/exchanges": "workspace:*",
     "@opentrader/logger": "workspace:*",
-    "@opentrader/processing": "workspace:*",
     "@opentrader/tools": "workspace:*",
     "@opentrader/trpc": "workspace:*",
     "@prisma/client": "6.9.0",

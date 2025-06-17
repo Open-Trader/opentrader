@@ -1,6 +1,5 @@
 import { ExchangeAccountWithCredentials, TBot, xprisma } from "@opentrader/db";
 import { logger } from "@opentrader/logger";
-import { BotProcessing } from "@opentrader/processing";
 import { BarSize } from "@opentrader/types";
 import { BotConfig, ExchangeConfig } from "../types.js";
 
@@ -151,44 +150,6 @@ export async function createOrUpdateBot<T = any>(
   }
 
   return bot;
-}
-
-export async function startBot(botId: number) {
-  const botProcessor = await BotProcessing.fromId(botId);
-  await botProcessor.processStartCommand();
-
-  await enableBot(botId);
-
-  await botProcessor.placePendingOrders();
-}
-
-export async function enableBot(botId: number) {
-  await xprisma.bot.custom.update({
-    where: {
-      id: botId,
-    },
-    data: {
-      enabled: true,
-    },
-  });
-}
-
-export async function stopBot(botId: number) {
-  const botProcessor = await BotProcessing.fromId(botId);
-  await botProcessor.processStopCommand();
-
-  await disableBot(botId);
-}
-
-export async function disableBot(botId: number) {
-  await xprisma.bot.custom.update({
-    where: {
-      id: botId,
-    },
-    data: {
-      enabled: false,
-    },
-  });
 }
 
 export async function resetProcessing(botId: number) {

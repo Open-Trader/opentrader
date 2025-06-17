@@ -20,8 +20,6 @@
       "@opentrader/exchanges/*": ["../packages/exchanges/src/*"],
       "@opentrader/logger": ["../packages/logger/src/index.ts"],
       "@opentrader/logger/*": ["../packages/logger/src/*"],
-      "@opentrader/processing": ["../packages/processing/src/index.ts"],
-      "@opentrader/processing/*": ["../packages/processing/src/*"],
       "@opentrader/tools": ["../packages/tools/src/index.ts"],
       "@opentrader/tools/*": ["../packages/tools/src/*"],
       "@opentrader/trpc": ["../packages/trpc/src/index.ts"],
@@ -58,9 +56,6 @@
     },
     {
       "path": "../packages/logger"
-    },
-    {
-      "path": "../packages/processing"
     },
     {
       "path": "../packages/tools"
