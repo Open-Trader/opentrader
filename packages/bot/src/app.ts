@@ -15,16 +15,15 @@
  *
  * Repository URL: https://github.com/bludnic/opentrader
  */
-import { Platform } from "@opentrader/bot";
 import { logger } from "@opentrader/logger";
 import { createServer, CreateServerOptions } from "./server.js";
-import { bootstrapPlatform } from "./platform.js";
+import { bootstrapPlatform, type Platform } from "./platform.js";
 
-type DaemonParams = {
+type AppParams = {
   server: CreateServerOptions;
 };
 
-export class Daemon {
+export class App {
   /**
    * Constructs an instance of the class Daemon, called from the create class method.
    *
@@ -41,7 +40,7 @@ export class Daemon {
    * @param params - The parameters required to create the Daemon.
    * @returns A promise that resolves to a Daemon instance.
    */
-  static async create(params: DaemonParams): Promise<Daemon> {
+  static async create(params: AppParams): Promise<App> {
     const platform = await bootstrapPlatform();
     logger.info("✅ Platform bootstrapped successfully");
 
@@ -51,11 +50,11 @@ export class Daemon {
     logger.info(`RPC Server listening on port ${params.server.port}`);
     logger.info(`OpenTrader UI: http://${params.server.host}:${params.server.port}`);
 
-    return new Daemon(platform, server);
+    return new App(platform, server);
   }
 
   /**
-   * Restarts the Daemon by shutting down the platform and bootstrapping it again.
+   * Restarts the app by shutting down and bootstrapping the platform.
    */
   async restart() {
     await this.platform.shutdown();
@@ -64,7 +63,7 @@ export class Daemon {
   }
 
   /**
-   * Shuts down the Daemon by closing the server and shutting down the platform.
+   * Shuts down the app by closing the server and shutting down the platform.
    */
   async shutdown() {
     logger.info("Shutting down Platform...");
@@ -76,5 +75,3 @@ export class Daemon {
     logger.info("Platform has shut down gracefully. Press CTRL+C to exit.");
   }
 }
-
-export { tServer } from "./trpc.js";

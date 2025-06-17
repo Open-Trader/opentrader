@@ -2,7 +2,6 @@ import { BarSize } from "@opentrader/types";
 import { logger } from "@opentrader/logger";
 import { findStrategy } from "@opentrader/bot-templates/server";
 import { ExchangeAccountWithCredentials, xprisma } from "@opentrader/db";
-import { tServer } from "@opentrader/daemon";
 import type { CommandResult } from "../types.js";
 import { createDaemonRpcClient } from "../daemon-rpc.js";
 import { readBotConfig, readExchangesConfig } from "../config.js";
@@ -14,7 +13,6 @@ type Options = {
   exchange?: string;
   timeframe?: BarSize;
 };
-
 
 export async function runTrading(strategyName: string, options: Options): Promise<CommandResult> {
   const daemonRpc = createDaemonRpcClient();
@@ -69,7 +67,7 @@ export async function runTrading(strategyName: string, options: Options): Promis
 
   if (bot?.enabled) {
     logger.info(`Bot "${bot.label}" is already enabled. Cancelling previous orders...`);
-    await tServer.bot.stop({ botId: bot.id });
+    await daemonRpc.bot.stop.mutate({ botId: bot.id });
 
     logger.info(`The bot was stoped`);
   }

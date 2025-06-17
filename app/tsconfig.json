@@ -12,8 +12,6 @@
       "@opentrader/bot-processor/*": ["../packages/bot-processor/src/*"],
       "@opentrader/bot-templates": ["../packages/bot-templates/src/index.ts"],
       "@opentrader/bot-templates/*": ["../packages/bot-templates/src/*"],
-      "@opentrader/daemon": ["../packages/daemon/src/index.ts"],
-      "@opentrader/daemon/*": ["../packages/daemon/src/*"],
       "@opentrader/db": ["../packages/db/src/index.ts"],
       "@opentrader/db/*": ["../packages/db/src/*"],
       "@opentrader/exchanges": ["../packages/exchanges/src/index.ts"],
@@ -44,9 +42,6 @@
     },
     {
       "path": "../packages/bot-templates"
-    },
-    {
-      "path": "../packages/daemon"
     },
     {
       "path": "../packages/db"

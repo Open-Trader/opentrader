@@ -59,9 +59,6 @@ importers:
       '@opentrader/bot-templates':
         specifier: workspace:*
         version: link:../packages/bot-templates
-      '@opentrader/daemon':
-        specifier: workspace:*
-        version: link:../packages/daemon
       '@opentrader/db':
         specifier: workspace:*
         version: link:../packages/db
@@ -190,6 +187,12 @@ importers:
 
   packages/bot:
     dependencies:
+      '@fastify/cors':
+        specifier: ^10.0.2
+        version: 10.1.0
+      '@fastify/static':
+        specifier: ^8.0.3
+        version: 8.2.0
       '@opentrader/bot-processor':
         specifier: workspace:*
         version: link:../bot-processor
@@ -211,9 +214,18 @@ importers:
       '@opentrader/tools':
         specifier: workspace:*
         version: link:../tools
+      '@opentrader/trpc':
+        specifier: workspace:*
+        version: link:../trpc
       '@prisma/client':
         specifier: 6.9.0
         version: 6.9.0(prisma@6.9.0(typescript@5.8.3))(typescript@5.8.3)
+      '@trpc/client':
+        specifier: ^11.4.1
+        version: 11.4.1(@trpc/server@11.4.1(typescript@5.8.3))(typescript@5.8.3)
+      '@trpc/server':
+        specifier: ^11.4.1
+        version: 11.4.1(typescript@5.8.3)
       async:
         specifier: ^3.2.6
         version: 3.2.6
@@ -226,6 +238,9 @@ importers:
       emittery:
         specifier: ^1.0.3
         version: 1.1.0
+      fastify:
+        specifier: ^5.3.2
+        version: 5.4.0
     devDependencies:
       '@opentrader/tsconfig':
         specifier: workspace:*
@@ -310,58 +325,6 @@ importers:
       '@types/node':
         specifier: ^22.10.2
         version: 22.15.32
-      typescript:
-        specifier: 5.8.3
-        version: 5.8.3
-      vitest:
-        specifier: ^3.2.3
-        version: 3.2.3(@types/node@22.15.32)(jiti@2.4.2)(terser@5.42.0)(tsx@4.20.3)(yaml@2.8.0)
-
-  packages/daemon:
-    dependencies:
-      '@fastify/cors':
-        specifier: ^10.0.2
-        version: 10.1.0
-      '@fastify/static':
-        specifier: ^8.0.3
-        version: 8.2.0
-      '@opentrader/bot':
-        specifier: workspace:*
-        version: link:../bot
-      '@opentrader/db':
-        specifier: workspace:*
-        version: link:../db
-      '@opentrader/logger':
-        specifier: workspace:*
-        version: link:../logger
-      '@opentrader/trpc':
-        specifier: workspace:*
-        version: link:../trpc
-      '@trpc/client':
-        specifier: ^11.4.1
-        version: 11.4.1(@trpc/server@11.4.1(typescript@5.8.3))(typescript@5.8.3)
-      '@trpc/server':
-        specifier: ^11.4.1
-        version: 11.4.1(typescript@5.8.3)
-      fastify:
-        specifier: ^5.3.2
-        version: 5.4.0
-      zod:
-        specifier: 3.25.65
-        version: 3.25.65
-    devDependencies:
-      '@opentrader/tsconfig':
-        specifier: workspace:*
-        version: link:../tsconfig
-      '@opentrader/types':
-        specifier: workspace:*
-        version: link:../types
-      '@types/node':
-        specifier: ^22.10.2
-        version: 22.15.32
-      ts-node:
-        specifier: 10.9.2
-        version: 10.9.2(@types/node@22.15.32)(typescript@5.8.3)
       typescript:
         specifier: 5.8.3
         version: 5.8.3
@@ -567,9 +530,6 @@ importers:
       '@opentrader/backtesting':
         specifier: workspace:*
         version: link:../backtesting
-      '@opentrader/bot':
-        specifier: workspace:*
-        version: link:../bot
       '@opentrader/bot-processor':
         specifier: workspace:*
         version: link:../bot-processor

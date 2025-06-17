@@ -50,7 +50,6 @@
     "@opentrader/bot": "workspace:*",
     "@opentrader/bot-processor": "workspace:*",
     "@opentrader/bot-templates": "workspace:*",
-    "@opentrader/daemon": "workspace:*",
     "@opentrader/db": "workspace:*",
     "@opentrader/exchanges": "workspace:*",
     "@opentrader/logger": "workspace:*",

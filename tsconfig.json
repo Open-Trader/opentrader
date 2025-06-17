@@ -18,9 +18,6 @@
       "path": "packages/bot-templates"
     },
     {
-      "path": "packages/daemon"
-    },
-    {
       "path": "packages/db"
     },
     {

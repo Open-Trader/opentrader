@@ -25,4 +25,4 @@ export const createContext = ({ req }: CreateFastifyContextOptions): Context => 
 };
 
 const createCaller = trpc.createCallerFactory(appRouter);
-export const tServer = createCaller(ctx);
+export const tServer = createCaller(ctx); // @deprecated

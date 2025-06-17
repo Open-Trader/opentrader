@@ -1,9 +1,9 @@
-import { Daemon } from "@opentrader/daemon";
+import { App } from "@opentrader/bot";
 import { getSettings } from "../../utils/settings.js";
 
 const { host, port } = getSettings();
 
-const daemon = await Daemon.create({
+const app = await App.create({
   server: {
     frontendDistPath: "../frontend",
     host,
@@ -12,7 +12,7 @@ const daemon = await Daemon.create({
 });
 
 async function shutdown() {
-  await daemon.shutdown();
+  await app.shutdown();
 
   process.exit(0);
 }

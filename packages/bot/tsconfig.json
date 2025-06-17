@@ -18,18 +18,44 @@
       "@opentrader/tools/*": ["../tools/src/*"],
       "@opentrader/tsconfig/*": ["../tsconfig/*"],
       "@opentrader/types": ["../types/src/index.ts"],
-      "@opentrader/types/*": ["../types/src/*"]
+      "@opentrader/types/*": ["../types/src/*"],
+      "@opentrader/bot-processor": ["../bot-processor/src/index.ts"],
+      "@opentrader/bot-processor/*": ["../bot-processor/src/*"],
+      "@opentrader/trpc": ["../trpc/src/index.ts"],
+      "@opentrader/trpc/*": ["../trpc/src/*"]
     }
   },
   "include": ["src/**/*"],
   "references": [
-    { "path": "../bot-templates" },
-    { "path": "../db" },
-    { "path": "../event-bus" },
-    { "path": "../exchanges" },
-    { "path": "../logger" },
-    { "path": "../tools" },
-    { "path": "../tsconfig" },
-    { "path": "../types" }
+    {
+      "path": "../bot-processor"
+    },
+    {
+      "path": "../bot-templates"
+    },
+    {
+      "path": "../db"
+    },
+    {
+      "path": "../event-bus"
+    },
+    {
+      "path": "../exchanges"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../tools"
+    },
+    {
+      "path": "../trpc"
+    },
+    {
+      "path": "../tsconfig"
+    },
+    {
+      "path": "../types"
+    }
   ]
 }

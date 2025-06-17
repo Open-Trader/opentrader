@@ -16,7 +16,6 @@
   },
   "dependencies": {
     "@opentrader/backtesting": "workspace:*",
-    "@opentrader/bot": "workspace:*",
     "@opentrader/bot-processor": "workspace:*",
     "@opentrader/bot-templates": "workspace:*",
     "@opentrader/db": "workspace:*",
