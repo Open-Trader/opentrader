@@ -106,7 +106,7 @@ export class CCXTExchange implements IExchange {
 
   async loadMarkets(): Promise<Record<string, Market>> {
     const cacheProvider = cache.getCacheProvider();
-    return cacheProvider.getMarkets(this.exchangeCode, this.ccxt);
+    return cacheProvider.getMarkets(this);
   }
 
   async accountAssets(): Promise<IAccountAsset[]> {

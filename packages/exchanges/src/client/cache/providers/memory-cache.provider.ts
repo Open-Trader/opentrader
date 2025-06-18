@@ -15,19 +15,23 @@
  *
  * Repository URL: https://github.com/bludnic/opentrader
  */
-import type { Dictionary, Exchange, Market } from "ccxt";
+import type { Dictionary, Market } from "ccxt";
 import type { ExchangeCode } from "@opentrader/types";
 import type { ICacheProvider } from "../../../types/cache/cache-provider.interface.js";
+import type { IExchange } from "../../../types/exchange.interface.js";
+
+type CacheKey = ExchangeCode | `demo-${ExchangeCode}`;
 
 export class MemoryCacheProvider implements ICacheProvider {
   /**
    * Share `markets` across all Exchange instances.
    */
-  private store: Partial<Record<ExchangeCode, Dictionary<Market>>> = {};
+  private store: Partial<Record<CacheKey, Dictionary<Market>>> = {};
 
-  async getMarkets(exchangeCode: ExchangeCode, ccxtExchange: Exchange) {
+  async getMarkets(exchange: IExchange) {
     const startTime = Date.now();
-    const cachedMarkets = this.store[exchangeCode];
+    const cacheKey = `${exchange.isDemo ? "demo-" : ""}${exchange.exchangeCode}` as const;
+    const cachedMarkets = this.store[cacheKey];
 
     if (cachedMarkets) {
       // console.info(
@@ -37,7 +41,7 @@ export class MemoryCacheProvider implements ICacheProvider {
       return cachedMarkets;
     }
 
-    const markets = await ccxtExchange.loadMarkets();
+    const markets = await exchange.ccxt.loadMarkets();
 
     const endTime = Date.now();
     const duration = (endTime - startTime) / 1000;
@@ -46,11 +50,11 @@ export class MemoryCacheProvider implements ICacheProvider {
     //   `MemoryCacheProvider: Fetched ${Object.keys(markets).length} markets on ${exchangeCode} exchange in ${duration}s`,
     // );
 
-    return this.cacheMarkets(markets, exchangeCode);
+    return this.cacheMarkets(markets, cacheKey);
   }
 
-  private async cacheMarkets(markets: Dictionary<Market>, exchangeCode: ExchangeCode) {
-    this.store[exchangeCode] = markets;
+  private async cacheMarkets(markets: Dictionary<Market>, cacheKey: CacheKey) {
+    this.store[cacheKey] = markets;
     return markets;
   }
 }
