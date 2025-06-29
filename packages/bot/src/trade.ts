@@ -51,6 +51,8 @@ export class Trade {
     const executor = SmartTradeExecutor.create(this.smartTrade, this.exchangeAccount);
     await executor.next();
 
+    this.smartTrade = await this.pull();
+
     // Init only after the initial order was placed
     this.init();
   }
@@ -58,6 +60,7 @@ export class Trade {
   async cancel() {
     this.destroy();
 
+    this.smartTrade = await this.pull();
     const executor = SmartTradeExecutor.create(this.smartTrade, this.exchangeAccount);
     await executor.cancelOrders();
   }
