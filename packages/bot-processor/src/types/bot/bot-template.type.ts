@@ -1,5 +1,5 @@
 import type { ZodObject } from "zod";
-import { BarSize, StrategyEventType } from "@opentrader/types";
+import { BarSize, StrategyEventType, XBotType } from "@opentrader/types";
 import type { TBotContext } from "./bot-context.type.js";
 import type { IBotConfiguration } from "./bot-configuration.interface.js";
 
@@ -42,6 +42,10 @@ export interface BotTemplate<T extends IBotConfiguration> {
    * Strategy params schema.
    */
   schema: ZodObject<any, any, any>;
+  /**
+   * Asign `bot.type` when a bot is created from specific strategy.
+   */
+  botType?: XBotType;
   /**
    * If true, the bot will not be displayed in the list of available strategies.
    * Mainly used for debug strategies.

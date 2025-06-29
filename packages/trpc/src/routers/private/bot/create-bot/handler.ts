@@ -2,6 +2,7 @@ import { findStrategy } from "@opentrader/bot-templates/server";
 import { TRPCError } from "@trpc/server";
 import { xprisma } from "@opentrader/db";
 import { eventBus } from "@opentrader/event-bus";
+import { XBotType } from "@opentrader/types";
 import type { Context } from "../../../../utils/context.js";
 import type { TCreateBotInputSchema } from "./schema.js";
 
@@ -49,11 +50,13 @@ export async function createBot({ ctx, input }: Options) {
     });
   }
 
+  const botType = strategy.strategyFn.botType || XBotType.Bot;
+
   const bot = await xprisma.bot.custom.create({
     data: {
       ...data,
       settings: JSON.stringify(data.settings),
-      type: "Bot",
+      type: botType in XBotType ? botType : XBotType.Bot,
       exchangeAccount: {
         connect: {
           id: exchangeAccount.id,
