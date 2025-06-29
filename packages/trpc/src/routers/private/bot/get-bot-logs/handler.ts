@@ -19,18 +19,24 @@ const parseJson = <T>(context: string | null | undefined) => {
 };
 
 export async function getBotLogs({ input }: Options) {
-  const botLogs = await xprisma.botLog.findMany({
+  const { cursor } = input;
+  const limit = input.limit ?? 50;
+  const items = await xprisma.botLog.findMany({
+    take: limit + 1, // get an extra item at the end which we'll use as next cursor
+    cursor: cursor ? { id: cursor } : undefined,
     where: {
-      bot: {
-        id: input.botId,
-      },
+      bot: { id: input.botId },
     },
-    orderBy: {
-      createdAt: "desc",
-    },
+    orderBy: { createdAt: "desc" },
   });
 
-  const logs: TBotLog[] = botLogs.map((log) => ({
+  let nextCursor: typeof cursor | undefined = undefined;
+  if (items.length > limit) {
+    const nextItem = items.pop();
+    nextCursor = nextItem!.id;
+  }
+
+  const logs: TBotLog[] = items.map((log) => ({
     ...log,
     action: log.action as StrategyAction,
     triggerEventType: log.triggerEventType as StrategyEventType,
@@ -38,5 +44,8 @@ export async function getBotLogs({ input }: Options) {
     error: parseJson<StrategyError>(log.error),
   }));
 
-  return logs;
+  return {
+    items: logs,
+    nextCursor,
+  };
 }
