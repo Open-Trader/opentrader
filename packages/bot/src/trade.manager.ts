@@ -45,9 +45,16 @@ export class TradeManager {
       });
 
       const trade = new Trade(data, this.ordersStream);
-      await trade.place();
-      logger.debug(`Placed with id ${trade.smartTrade.id} was placed on exchange.`);
-      this.trades.push(trade);
+      try {
+        await trade.place();
+        logger.debug(`Placed with id ${trade.smartTrade.id} was placed on exchange.`);
+        this.trades.push(trade);
+      } catch (err) {
+        logger.warn(
+          `Failed to place order of ST ${trade.smartTrade.id} on exchange: ${(err as Error).name} ${(err as Error).message}`,
+        );
+        await trade.cancel();
+      }
     }
   }
 
