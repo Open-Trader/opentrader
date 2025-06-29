@@ -10,11 +10,13 @@ export class TradeManager {
   constructor(private ordersStream: OrdersStream) {
     eventBus.on("placeTrade", this.handleTradePlacement);
     eventBus.on("onTradeCompleted", this.handleTradeCompleted);
+    eventBus.on("cancelTrade", this.cancelTrade);
   }
 
   destroy() {
     eventBus.off("placeTrade", this.handleTradePlacement);
     eventBus.off("onTradeCompleted", this.handleTradeCompleted);
+    eventBus.off("cancelTrade", this.cancelTrade);
   }
 
   private handleTradePlacement = async (trade: SmartTradeWithOrders) => {
@@ -24,6 +26,10 @@ export class TradeManager {
   private handleTradeCompleted = (trade: SmartTradeWithOrders) => {
     this.trades = this.trades.filter((t) => t.smartTrade.id !== trade.id);
     logger.info(`Trade with id ${trade.id} completed and has been removed from the trades list.`);
+  };
+
+  private cancelTrade = async (trade: SmartTradeWithOrders) => {
+    await this.cancel(trade.id);
   };
 
   async place(id: number) {
@@ -49,7 +55,8 @@ export class TradeManager {
     const trade = this.trades.find((t) => t.smartTrade.id === id);
 
     if (!trade) {
-      throw new Error(`Trade with id ${id} does not exist. Nothing to cancel.`);
+      logger.error(`Trade with id ${id} does not exist. Nothing to cancel.`);
+      return;
     }
 
     await trade.cancel();

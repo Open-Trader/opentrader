@@ -3,7 +3,7 @@ import { xprisma } from "@opentrader/db";
 import { exchangeProvider } from "@opentrader/exchanges";
 import { logger } from "@opentrader/logger";
 import { XOrderStatus, XTakeProfitType } from "@opentrader/types";
-import { SmartTradeExecutor } from "../executors/index.js";
+import { eventBus } from "@opentrader/event-bus";
 import { OrderNormalizer, SmartTradeNormalizer } from "./normalizer.js";
 
 export class BotStoreAdapter implements IStore {
@@ -144,8 +144,7 @@ export class BotStoreAdapter implements IStore {
       return false;
     }
 
-    const smartTradeExecutor = SmartTradeExecutor.create(smartTrade, smartTrade.exchangeAccount);
-    await smartTradeExecutor.cancelOrders();
+    await eventBus.emit("cancelTrade", smartTrade);
 
     return true;
   }
