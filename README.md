@@ -88,6 +88,109 @@ The app will start the RPC server and listen on port 8000.
 
 > **Tip**: Use `opentrader up -d` to start the app as a daemon. To stop it, run `opentrader down`.
 
+# Deployment Options
+
+OpenTrader can be deployed in various ways depending on your needs. Here are the recommended deployment methods:
+
+## Using PM2
+
+PM2 is a process manager for Node.js applications that helps keep your bot running 24/7.
+
+1. Install PM2 globally:
+```bash
+npm install -g pm2
+```
+
+2. Start OpenTrader with PM2:
+```bash
+pm2 start "opentrader up" --name opentrader
+```
+
+3. Useful PM2 commands:
+```bash
+pm2 status               # Check bot status
+pm2 logs opentrader      # View logs
+pm2 stop opentrader      # Stop the bot
+pm2 restart opentrader   # Restart the bot
+pm2 save                 # Save current process list to restart on server reboot
+```
+
+4. To make OpenTrader start automatically when your server restarts:
+```bash
+pm2 startup              # Generate startup script
+pm2 save                 # Save current process list
+```
+
+## Using Docker
+
+Docker provides an isolated environment for running OpenTrader. The project includes both a standard Dockerfile and docker-compose.yml.
+
+### Using docker-compose (recommended):
+
+1. Clone the repository:
+```bash
+git clone https://github.com/bludnic/opentrader.git
+cd opentrader
+```
+
+2. Create your configuration files:
+```bash
+cp exchanges.sample.json5 exchanges.json5
+cp config.sample.json5 config.json5
+```
+
+3. Start the services:
+```bash
+docker-compose up -d
+```
+
+4. Access the UI at http://localhost:5000
+
+### Using the Dockerfile directly:
+
+1. Build the Docker image:
+```bash
+docker build -t opentrader .
+```
+
+2. Run the container:
+```bash
+docker run -d \
+  -p 8000:8000 \
+  -v $(pwd)/config:/app/data \
+  -v $(pwd)/exchanges.json5:/app/exchanges.json5 \
+  -v $(pwd)/config.json5:/app/config.json5 \
+  --name opentrader \
+  opentrader
+```
+
+3. Useful Docker commands:
+```bash
+docker logs opentrader     # View logs
+docker stop opentrader     # Stop the container
+docker start opentrader    # Start the container
+docker restart opentrader  # Restart the container
+```
+
+## Using GitHub Codespaces
+
+GitHub Codespaces provides a cloud development environment for running OpenTrader. The project already has a .devcontainer configuration.
+
+1. Fork the repository on GitHub
+2. Click on the "Code" button and select "Create codespace on main"
+3. Once the codespace is ready, the environment will be set up with all dependencies
+4. Install and start OpenTrader:
+```bash
+npm install -g opentrader
+opentrader set-password <your-password>
+opentrader up
+```
+
+5. GitHub Codespaces will automatically forward the port. Click on the "Ports" tab to find and access the UI.
+
+> [!NOTE]
+> When using Codespaces, make sure to configure your exchange API keys in `exchanges.json5` and set up your strategy configuration in `config.json5`.
+
 # Usage
 
 ## UI
