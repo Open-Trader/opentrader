@@ -189,7 +189,8 @@ export class TradeExecutor implements ISmartTradeExecutor {
 
     if (
       entryOrder.status === "Filled" &&
-      (takeProfitOrder?.status === "Filled" || stopLossOrder?.status === "Filled")
+      (!takeProfitOrder || takeProfitOrder.status === "Filled") &&
+      (!stopLossOrder || stopLossOrder.status === "Filled")
     ) {
       return "Finished";
     }

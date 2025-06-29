@@ -5,8 +5,13 @@ import { exchangeProvider } from "@opentrader/exchanges";
 import type { TBotWithExchangeAccount } from "@opentrader/db";
 import { xprisma } from "@opentrader/db";
 import { logger } from "@opentrader/logger";
-import type { ExchangeCode, MarketData, MarketId, StrategyEventType } from "@opentrader/types";
-import { SmartTradeExecutor } from "../executors/index.js";
+import {
+  XOrderStatus,
+  type ExchangeCode,
+  type MarketData,
+  type MarketId,
+  type StrategyEventType,
+} from "@opentrader/types";
 import { BotStoreAdapter } from "./bot-store-adapter.js";
 
 type StrategyRunContext = {
@@ -201,36 +206,11 @@ export class BotProcessing {
     return processor;
   }
 
-  async placePendingOrders() {
-    const smartTrades = await xprisma.smartTrade.findMany({
-      where: {
-        ref: { not: null },
-        bot: { id: this.bot.id },
-      },
-      include: {
-        exchangeAccount: true,
-        orders: true,
-      },
-    });
-
-    logger.debug(`BotProcessing: Found ${smartTrades.length} pending orders for placement`);
-
-    for (const smartTrade of smartTrades) {
-      const { exchangeAccount } = smartTrade;
-
-      logger.debug(
-        `Executed next() for SmartTrade { id: ${smartTrade.id}, symbol: ${smartTrade.symbol}, exchangeCode: ${exchangeAccount.exchangeCode} }`,
-      );
-
-      const smartTradeExecutor = SmartTradeExecutor.create(smartTrade, exchangeAccount);
-      await smartTradeExecutor.next();
-    }
-  }
-
   async getPendingSmartTrades() {
     const smartTrades = await xprisma.smartTrade.findMany({
       where: {
         ref: { not: null },
+        orders: { some: { status: XOrderStatus.Idle } },
         bot: { id: this.bot.id },
       },
       include: {
