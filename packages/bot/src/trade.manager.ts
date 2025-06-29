@@ -55,7 +55,7 @@ export class TradeManager {
     const trade = this.trades.find((t) => t.smartTrade.id === id);
 
     if (!trade) {
-      logger.error(`Trade with id ${id} does not exist. Nothing to cancel.`);
+      logger.debug(`[TradeManager] Trade with id ${id} does not exist. Nothing to cancel.`);
       return;
     }
 

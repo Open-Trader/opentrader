@@ -117,7 +117,8 @@ export class Bot {
         logger.debug(`📠 Processing ${tasks.length} task(s) for bot [${this.bot.id} - ${this.bot.name}]`);
       },
       (error) => {
-        logger.error(error, `[StrategyExecutionQueue] An error occurred: ${error.message}. Retrying in 1 minute...`);
+        logger.error(`[StrategyExecutionQueue] An error occurred: ${error.message}. Retrying in 1 minute...`);
+        logger.debug(error);
       },
     );
   }
