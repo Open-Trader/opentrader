@@ -61,6 +61,7 @@ export interface IExchange {
   watchOrders: (params?: IWatchOrdersRequest) => Promise<IWatchOrdersResponse>;
   watchCandles: (symbol: IWatchCandlesRequest) => Promise<ICandlestick[]>;
   watchTrades: (symbol: IWatchTradesRequest) => Promise<IWatchTradesResponse>;
+  getOrderbook: (symbol: string) => Promise<IOrderbook>;
   watchOrderbook: (symbol: string) => Promise<IOrderbook>;
   watchTicker: (symbol: string) => Promise<ITicker>;
 }

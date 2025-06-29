@@ -264,6 +264,12 @@ export class CCXTExchange implements IExchange {
     return this.tradesRequest[params.symbol]!;
   }
 
+  async getOrderbook(symbol: string): Promise<IOrderbook> {
+    const args = normalize.watchOrderbook.request(symbol);
+    const data = await this.ccxt.fetchOrderBook(...args);
+    return normalize.watchOrderbook.response(data);
+  }
+
   async watchOrderbook(symbol: string): Promise<IOrderbook> {
     const args = normalize.watchOrderbook.request(symbol);
     if (this.ccxt.has.watchOrderBook) {

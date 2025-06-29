@@ -121,6 +121,15 @@ export class MemoryExchange implements IExchange {
     };
   }
 
+  async getOrderbook(symbol: string): Promise<IOrderbook> {
+    return {
+      symbol,
+      timestamp: Date.now(),
+      bids: [],
+      asks: [],
+    };
+  }
+
   async getMarketPrice(params: IGetMarketPriceRequest): Promise<IGetMarketPriceResponse> {
     const candlestick = this.marketSimulator.currentCandle;
     const assetPrice = candlestick.close;
