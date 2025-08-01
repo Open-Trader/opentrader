@@ -100,9 +100,9 @@ export class SmartTradeSynchronizer {
         if (statusChanged) {
           await xprisma.order.updateStatusToFilled({
             orderId: order.id,
-            filledPrice: exchangeOrder.filledPrice,
+            filledPrice: Number(exchangeOrder.filledPrice),
             filledAt: new Date(exchangeOrder.lastTradeTimestamp),
-            fee: exchangeOrder.fee,
+            fee: Number(exchangeOrder.fee),
           });
           console.log(`        -> Filled with price ${exchangeOrder.filledPrice} and fee ${exchangeOrder.fee}`);
 

@@ -112,7 +112,7 @@ export class ExchangeAccountProcessor {
           orderId: order.id,
           filledPrice: exchangeOrder.filledPrice,
           filledAt: new Date(exchangeOrder.lastTradeTimestamp),
-          fee: exchangeOrder.fee,
+          fee: Number(exchangeOrder.fee),
         });
         logger.info(`        -> Filled with price ${exchangeOrder.filledPrice} and fee ${exchangeOrder.fee}`);
 

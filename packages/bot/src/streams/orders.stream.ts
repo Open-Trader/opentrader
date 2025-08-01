@@ -96,9 +96,9 @@ export class OrdersStream extends EventEmitter {
 
     const updatedOrder = await xprisma.order.updateStatusToFilled({
       orderId: order.id,
-      filledPrice: exchangeOrder.filledPrice,
+      filledPrice: Number(exchangeOrder.filledPrice),
       filledAt: new Date(exchangeOrder.lastTradeTimestamp || Date.now()),
-      fee: exchangeOrder.fee,
+      fee: Number(exchangeOrder.fee),
     });
 
     this.emit("order", {
