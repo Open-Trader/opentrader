@@ -21,7 +21,7 @@ import { nullToUndefined, required } from "../utils/index.js";
 export class OrderNormalizer {
   static normalize(order: Order): StrategyOrder {
     const quantityExecuted = order.status === XOrderStatus.Filled ? order.quantity : 0;
-    const filledOrLimitPrice = order.filledPrice || order.price || 0;
+    const filledOrLimitPrice = Number(order.filledPrice || order.price || 0);
     const volume = order.quantity * filledOrLimitPrice;
     const volumeExecuted = order.status === XOrderStatus.Filled ? volume : 0;
 

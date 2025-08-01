@@ -98,7 +98,7 @@ export class OrdersStream extends EventEmitter {
       orderId: order.id,
       filledPrice: exchangeOrder.filledPrice,
       filledAt: new Date(exchangeOrder.lastTradeTimestamp || Date.now()),
-      fee: exchangeOrder.fee,
+      fee: Number(exchangeOrder.fee),
     });
 
     this.emit("order", {
