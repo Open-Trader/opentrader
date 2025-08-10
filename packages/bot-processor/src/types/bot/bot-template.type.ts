@@ -52,6 +52,36 @@ export interface BotTemplate<T extends IBotConfiguration> {
    */
   hidden?: boolean;
   /**
+   * Funds required to run the strategy. Can be a static object defining required amounts
+   * for each currency, or a function that calculates required funds based on bot configuration.
+   * 
+   * @example Static funds requirement
+   * ```ts
+   * strategy.fundsRequired = {
+   *   ETH: 1,
+   *   USDT: 100
+   * }
+   * ```
+   * 
+   * @example Dynamic funds requirement
+   * ```ts
+   * strategy.fundsRequired = (bot) => ({
+   *   ETH: bot.settings.quantity,
+   *   USDT: bot.settings.quantity * bot.settings.price
+   * })
+   * ```
+   * 
+   * @example Skip funds validation for certain conditions
+   * ```ts
+   * strategy.fundsRequired = (bot) => {
+   *   // Skip validation for market orders where price is unknown
+   *   if (!bot.settings.price) return undefined;
+   *   return { USDT: bot.settings.quantity * bot.settings.price };
+   * }
+   * ```
+   */
+  fundsRequired?: Record<string, number> | ((botConfig: T) => Record<string, number> | undefined);
+  /**
    * List of pairs to watch for trades.
    *
    * @example Watch trades on BTC/USDT pair. The default exchange from bot config will be used.
