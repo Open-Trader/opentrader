@@ -13,3 +13,4 @@ export * from "./testOrderbook.js";
 export * from "./testTicker.js";
 export * from "./testPublicTrade.js";
 export * from "./testAllEffect.js";
+export * from "./testFundsRequired.js";

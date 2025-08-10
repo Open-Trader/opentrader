@@ -78,6 +78,30 @@ dca.watchers = {
   watchCandles: ({ symbol }: IBotConfiguration) => symbol,
 };
 
+dca.fundsRequired = (botConfig: DCABotConfig) => {
+  const { settings } = botConfig;
+  const baseAsset = botConfig.symbol.split("/")[1] || "USDT";
+
+  // If entry price is not defined (market order), we cannot calculate exact funds needed
+  // Return undefined to skip funds validation for market orders
+  if (!settings.entry.price) {
+    return undefined;
+  }
+
+  const entryPrice = settings.entry.price;
+
+  // Calculate total required funds based on entry quantity and safety orders
+  const entryFunds = settings.entry.quantity * entryPrice;
+  const safetyOrdersFunds = settings.safetyOrders.reduce(
+    (total, so) => total + so.quantity * entryPrice * (1 - so.priceDeviation / 100),
+    0,
+  );
+
+  return {
+    [baseAsset]: entryFunds + safetyOrdersFunds,
+  };
+};
+
 type Template = BotTemplate<DCABotConfig>;
 
 export type DCABotConfig = IBotConfiguration<z.infer<typeof dca.schema>>;

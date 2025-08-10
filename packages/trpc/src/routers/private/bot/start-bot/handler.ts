@@ -1,5 +1,6 @@
 import { eventBus } from "@opentrader/event-bus";
 import { BotService } from "../../../../services/bot.service.js";
+import { FundsValidationService } from "../../../../services/funds-validation.service.js";
 import type { Context } from "../../../../utils/context.js";
 import type { TStartGridBotInputSchema } from "./schema.js";
 
@@ -16,6 +17,10 @@ export async function startGridBot({ input }: Options) {
   const botService = await BotService.fromId(botId);
   botService.assertIsNotAlreadyRunning();
   botService.assertIsNotProcessing();
+
+  // Validate funds before starting the bot
+  const fundsValidationService = new FundsValidationService(botService.bot);
+  await fundsValidationService.validateFundsOrThrow();
 
   await eventBus.emit("startBot", botService.bot);
 
