@@ -87,7 +87,7 @@ export class CCXTExchange implements IExchange {
     this.ccxt =
       ccxtClassName in pro
         ? new pro[ccxtClassName as keyof typeof pro](ccxtCredentials)
-        : new exchanges[ccxtClassName](ccxtCredentials);
+        : new exchanges[ccxtClassName as keyof typeof exchanges](ccxtCredentials);
 
     this.ccxt.fetchImplementation = fetcher; // #57
     // #88 Fixes: 'e instanceof this.AbortError' is not an object
