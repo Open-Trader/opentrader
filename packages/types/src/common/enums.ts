@@ -18,6 +18,7 @@ export const ExchangeCode = {
   BINANCE: "BINANCE",
   KRAKEN: "KRAKEN",
   COINBASE: "COINBASE",
+  COINMATE: "COINMATE",
   GATEIO: "GATEIO",
   BITGET: "BITGET",
 } as const;

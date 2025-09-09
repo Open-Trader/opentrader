@@ -9,6 +9,7 @@ export const exchanges: Record<ExchangeCode, ReturnType<typeof createExchange>> 
   [ExchangeCode.BINANCE]: createExchange(ExchangeCode.BINANCE),
   [ExchangeCode.KRAKEN]: createExchange(ExchangeCode.KRAKEN),
   [ExchangeCode.COINBASE]: createExchange(ExchangeCode.COINBASE),
+  [ExchangeCode.COINMATE]: createExchange(ExchangeCode.COINMATE),
   [ExchangeCode.GATEIO]: createExchange(ExchangeCode.GATEIO),
 } as const;
 
