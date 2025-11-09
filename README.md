@@ -1,86 +1,165 @@
-# Crypto Risk Dashboard — Cloud Deployment
+<p align="center">
+  <a href="https://github.com/bludnic/opentrader" title="OpenTrader">
+    <img src=".github/images/logo-dark-rounded.png" alt="OpenTrader logo" width="128" />
+  </a>
+</p>
 
-**Deployment**: Railway (API + UI) + GitHub Actions (Worker)
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/bludnic/opentrader/dev.yml)](https://github.com/bludnic/opentrader/actions)
+[![NPM Version](https://img.shields.io/npm/v/opentrader?color=blue)](https://www.npmjs.com/package/opentrader)
+[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/bludnic/opentrader)](https://github.com/bludnic/opentrader/graphs/contributors)
+[![Static Badge](https://img.shields.io/badge/Twitter-black?logo=X&color=white&logoColor=black)](https://x.com/intent/follow?screen_name=OpenTraderLabs)
+[![Static Badge](https://img.shields.io/badge/Discord-white?logo=Discord)](https://discord.gg/RS7y3ffvvG)
+[![Static Badge](https://img.shields.io/badge/Reddit-white?logo=Reddit)](https://www.reddit.com/r/OpenTrader)
+[![Static Badge](https://img.shields.io/badge/Telegram-white?logo=Telegram)](https://t.me/+cJLNxLSjcW83Njgy)
 
-## Quick Deploy with Railway:
+[OpenTrader](https://github.com/bludnic/opentrader) is a self-hosted cryptocurrency trading bot, featuring built-in and highly customizable strategies, integration with technical indicators, high-frequency trading, and cross-exchange trading with support for 100+ exchanges via CCXT.
 
-### Step 1: Create Railway Project and Database
+**Features:**
 
-1. **Sign up/Login to Railway**: Go to [railway.app](https://railway.app) and connect your GitHub account
+- **✨ Robust UI**: A user-friendly interface for managing the bots.
+- **🌐 Multiple Exchanges:** Trade across various cryptocurrency exchanges.
+- **📝 Paper Trading**: Test your strategies without risking real money.
+- **📊 Backtesting:** Backtest your strategies using historical data.
+- **⚙️ Easy Installation:** Install effortlessly via NPM.
 
-2. **Create New Project**:
-   - Click "New Project"
-   - Select "Empty Project"
+**Strategies:**
 
-3. **Add PostgreSQL Database**:
-   - Click "+ New" → "Database" → "Add PostgreSQL"
-   - Railway will automatically create a PostgreSQL database
-   - Note the database - it will be used in the next steps
+- ☑️ [GRID](packages/bot-templates/src/templates/grid-bot.ts): Make profits from market fluctuations by creating a grid of buy and sell orders.
+- ☑️ [DCA](packages/bot-templates/src/templates/dca.ts): Entry with multiple orders to average the entry price and sell on price swings.
+- ☑️ [RSI](packages/bot-templates/src/templates/rsi.ts): Places orders based on the RSI indicator value.
+- 🛠️ [CUSTOM](https://github.com/Open-Trader/custom-strategy): Build your own strategy in just a few lines of code.
 
-### Step 2: Deploy API Service
+# 💓 Status of the Project
 
-1. **Add API Service**:
-   - In your Railway project, click "+ New" → "GitHub Repo"
-   - Select this repository
-   - Select the repository and connect it
+This project is a personal passion, developed in my free time. If you find it useful, please give it a ⭐️. Your support means a lot and motivates me to keep improving the bot. If you'd like to make a [donation](#Donate), see the options below. 💖
 
-2. **Configure API Service**:
-   - In the service settings:
-     - **Root Directory**: Leave empty or set to repository root (Railway will auto-detect Dockerfile)
-     - Or set **Root Directory**: `services/api` (Railway uses repo root as build context)
-     - Railway will automatically detect the Dockerfile in `services/api/Dockerfile`
-   
-3. **Add Environment Variables**:
-   - Click on "Variables" tab
-   - Add `DATABASE_URL` → Reference from PostgreSQL service (Railway will auto-generate this)
-   - Add `SYMBOLS` → `binance:BTC/USDT,binance:ETH/USDT,bybit:SOL/USDT`
-   - Railway will automatically expose the service and generate a URL
+# 🍩 Donate
 
-4. **Generate Public URL**:
-   - In API service settings → "Networking" → "Generate Domain"
-   - Note your API URL (e.g., `https://crypto-risk-api-production.up.railway.app`)
+If you find OpenTrader useful and would like to support its development, consider making a donation. Your contributions will help cover the costs of maintaining and improving this project.
 
-### Step 3: Deploy UI Service
+**Donate via:**
 
-1. **Add UI Service**:
-   - Click "+ New" → "GitHub Repo" (same repository)
-   - Or duplicate the API service and modify settings
+- **Bitcoin (BTC):** `1LBqWWne1ac455UmUDVF32ozVAhy1HgVXn`
+- **Ethereum (ETH):** `0x60371d49F9Cc7ec7d7e34979D5DD31996B7B43Ff`
 
-2. **Configure UI Service**:
-   - **Root Directory**: Leave empty or set to repository root
-   - Or set **Root Directory**: `services/ui` (Railway uses repo root as build context)
-   - Railway will automatically detect the Dockerfile in `services/ui/Dockerfile`
-   
-3. **Add Environment Variables**:
-   - `API_CANDIDATES` → Your API URL from Step 2 (e.g., `https://crypto-risk-api-production.up.railway.app,http://api:8000,http://localhost:8000`)
-   - `DATABASE_URL` → Reference from PostgreSQL service
-   
-4. **Generate Public URL**:
-   - Generate a domain for UI service (e.g., `https://crypto-risk-ui-production.up.railway.app`)
+Thank you for your support!
 
-### Step 4: Setup GitHub Actions Worker
+# 👋🏻 Join our Community
 
-1. **Get Database Connection String**:
-   - In Railway project → PostgreSQL database → "Variables" tab
-   - Copy the `DATABASE_URL` value (format: `postgresql://user:pass@host:port/dbname`)
+👥 Connect with developers, request features, and receive support. Join our community on [Discord](https://discord.gg/RS7y3ffvvG).
 
-2. **Configure GitHub Secrets**:
-   - Go to your GitHub repository → Settings → Secrets and variables → Actions
-   - Click "New repository secret"
-   - Add: `DATABASE_URL` = your Railway PostgreSQL connection string
-   - The worker will run automatically every 5 minutes via GitHub Actions
+[![Static Badge](https://img.shields.io/badge/Discord-white?logo=Discord&style=for-the-badge&color=white&logoColor=7289da)](https://discord.gg/RS7y3ffvvG)
+[![Static Badge](https://img.shields.io/badge/Telegram-white?logo=Telegram&style=for-the-badge&color=white)](https://t.me/+cJLNxLSjcW83Njgy)
+[![Static Badge](https://img.shields.io/badge/Reddit-white?logo=Reddit&style=for-the-badge&color=white)](https://www.reddit.com/r/OpenTrader)
 
-3. **Verify Worker**:
-   - Go to Actions tab in GitHub
-   - Check "Crypto Data Worker" workflow runs every 5 minutes
-   - You can manually trigger it via "workflow_dispatch"
+🔔 For announcements and updates, follow us on [Twitter](https://twitter.com/intent/follow?screen_name=OpenTraderLabs) and [Telegram](https://t.me/opentrader_pro).
 
-### Step 5: Access Your Dashboard
+[![Static Badge](https://img.shields.io/badge/Twitter-white?logo=X&style=for-the-badge&color=black)](https://twitter.com/intent/follow?screen_name=OpenTraderLabs)
+[![Static Badge](https://img.shields.io/badge/Telegram-white?logo=Telegram&style=for-the-badge&color=24A1DE&logoColor=white)](https://t.me/opentrader_pro)
 
-- **UI**: Your Railway UI service URL
-- **API**: Your Railway API service URL
-- Both services will auto-deploy on git push to main branch
+# ⚡️ Quick start
 
-## Local Development:
+Get started with OpenTrader in just a few steps. Follow this quick guide to install, configure, and run your crypto trading bot.
+
+> [!NOTE]
+> OpenTrader requires Node.js v22 or higher. You can check your Node.js version by running `node -v`
+
+## Installation
+
+1. Install OpenTrader globally using npm:
+
 ```bash
-docker compose up --build
+npm install -g opentrader
+```
+
+2. Set an admin password for later accessing the OpenTrader UI:
+
+```bash
+opentrader set-password <password>
+```
+
+3. Start the OpenTrader app
+
+```bash
+opentrader up
+```
+
+The app will start the RPC server and listen on port 8000.
+
+> **Tip**: Use `opentrader up -d` to start the app as a daemon. To stop it, run `opentrader down`.
+
+# Usage
+
+## UI
+
+The user interface allows managing multiple bots and strategies, viewing backtest results, and monitoring live trading.
+
+![UI Preview](.github/images/ui.png)
+
+You can access the OpenTrader UI on: http://localhost:8000
+
+## CLI
+
+### Connect an exchange
+
+Copy the `exchanges.sample.json5` file to `exchanges.json5` and add your API keys.
+
+> Available exchanges: OKX, BYBIT, BINANCE, KRAKEN, COINBASE, GATEIO, BITGET
+
+### Choose a strategy
+
+Create the strategy configuration file `config.json5`. We will use the `grid` strategy as an example.
+
+```json5
+{
+  // Grid strategy params
+  settings: {
+    highPrice: 70000, // upper price of the grid
+    lowPrice: 60000, // lower price of the grid
+    gridLevels: 20, // number of grid levels
+    quantityPerGrid: 0.0001, // quantity in base currency per each grid
+  },
+  pair: "BTC/USDT",
+  exchange: "DEFAULT",
+}
+```
+
+> Currently supported strategies: `grid`, `dca`, `rsi`
+
+### Run a backtest
+
+Command: `opentrader backtest <strategy> --from <date> --to <date> -t <timeframe>`
+
+Example running a `grid` strategy on `1h` timeframe.
+
+```bash
+opentrader backtest grid --from 2024-03-01 --to 2024-06-01 -t 1h
+```
+
+> To get more accurate results, use a smaller timeframe, e.g. 1m, however, it will take more time to download OHLC data from the exchange.
+
+### Running a Live Trading
+
+Command: `opentrader trade <strategy>`
+
+Example running a live trading with `grid` strategy.
+
+```bash
+opentrader trade grid
+```
+
+> To stop the live trading, run `opentrader stop`
+
+# Project structure
+
+- Strategies dir: [packages/bot-templates](/packages/bot-templates/src/templates)
+- Indicators: [packages/indicators](/packages/indicators/src/indicators)
+- Exchange connectors: [packages/exchanges](/packages/exchanges/src/exchanges)
+
+# 🪪 License
+
+Licensed under the [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0) License. See the [LICENSE](LICENSE) file for more information.
+
+# Disclaimer
+
+This software is for educational purposes only. USE THE SOFTWARE AT YOUR OWN RISK. THE AUTHORS AND ALL AFFILIATES ASSUME NO RESPONSIBILITY FOR YOUR TRADING RESULTS. Do not risk money that you are afraid to lose. There might be bugs in the code - this software DOES NOT come with ANY warranty.

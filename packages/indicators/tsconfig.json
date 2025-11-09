@@ -1,0 +1,21 @@
+{
+  "extends": "@opentrader/tsconfig/esm.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "../../dts/packages/indicators",
+    "paths": {
+      "@opentrader/tsconfig/*": ["../tsconfig/*"],
+      "@opentrader/types": ["../types/src/index.ts"],
+      "@opentrader/types/*": ["../types/src/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "references": [
+    {
+      "path": "../tsconfig"
+    },
+    {
+      "path": "../types"
+    }
+  ]
+}

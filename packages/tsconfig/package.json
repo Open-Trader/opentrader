@@ -1,0 +1,19 @@
+{
+  "name": "@opentrader/tsconfig",
+  "version": "0.0.0",
+  "description": "TypeScript configuration from OpenTrader",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Open-Trader/opentrader.git"
+  },
+  "keywords": [
+    "tsconfig",
+    "opentrader"
+  ],
+  "author": "bludnic",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/Open-Trader/opentrader/issues"
+  },
+  "homepage": "https://github.com/Open-Trader/opentrader/tree/master/packages/tsconfig"
+}

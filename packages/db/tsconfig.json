@@ -1,0 +1,26 @@
+{
+  "extends": "@opentrader/tsconfig/esm.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "../../dts/packages/db",
+    "paths": {
+      "@opentrader/prisma": ["../prisma/src/index.ts"],
+      "@opentrader/prisma/*": ["../prisma/src/*"],
+      "@opentrader/tsconfig/*": ["../tsconfig/*"],
+      "@opentrader/types": ["../types/src/index.ts"],
+      "@opentrader/types/*": ["../types/src/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "references": [
+    {
+      "path": "../prisma"
+    },
+    {
+      "path": "../tsconfig"
+    },
+    {
+      "path": "../types"
+    }
+  ]
+}

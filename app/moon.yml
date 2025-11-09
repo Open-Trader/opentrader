@@ -1,0 +1,30 @@
+tasks:
+  build:
+    command: tsup
+    platform: node
+    inputs:
+      - "src/**/*"
+      - "package.json"
+      - "tsconfig.json"
+      - "tsup.config.ts"
+      - "/packages/*/src/**"
+    outputs:
+      - "dist"
+  dts:
+    # Bug: The `--external-imports` doesn't have effect on the `ccxt` lib.
+    # So the references to `ccxt` types are not imported in the generated `main.d.ts` file.
+    # Using a hack by adding imports manually.
+    command: |
+      dts-bundle-generator src/main.ts -o dist/main.d.ts --external-imports zod ccxt --no-check --no-banner && \
+      'echo -e "import { Exchange, Market } from \"ccxt\";\n$(cat dist/main.d.ts)" > dist/main.d.ts' && \
+      tsc --noEmit dist/main.d.ts --skipLibCheck
+    inputs:
+      - "src/**/*"
+    outputs:
+      - "dist/main.d.ts"
+  lint:
+    command: oxlint
+  lint-fix:
+    command: oxlint --fix
+  typecheck:
+    command: tsc --noEmit

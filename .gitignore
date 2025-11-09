@@ -1,7 +1,33 @@
-__pycache__/
-*.pyc
-.env
-db_data/
-.idea/
-.vscode/
+.idea
+node_modules
 .DS_Store
+playground
+.env
+.env.production
+config.json5
+exchanges.json5
+.vercel
+
+# Release build for publishing on NPM
+/release
+
+# Prisma SQLite database files
+dev.db
+dev.db-journal
+
+# pnpm prune
+/out
+
+/k8s
+
+# TS
+tsconfig.tsbuildinfo
+
+# For some reason after `moon run :build`, the `/dts` is created in the root directory.
+# We don't need to emit types at all, because we use a separate command for this: `moon run :dts`
+# Workaround to avoid committing them to the repo.
+/dts
+
+# moon
+.moon/cache
+.moon/docker

@@ -1,0 +1,57 @@
+{
+  "extends": "./tsconfig.options.json",
+  "files": [],
+  "references": [
+    {
+      "path": "app"
+    },
+    {
+      "path": "packages/backtesting"
+    },
+    {
+      "path": "packages/bot"
+    },
+    {
+      "path": "packages/bot-processor"
+    },
+    {
+      "path": "packages/bot-templates"
+    },
+    {
+      "path": "packages/db"
+    },
+    {
+      "path": "packages/event-bus"
+    },
+    {
+      "path": "packages/exchanges"
+    },
+    {
+      "path": "packages/indicators"
+    },
+    {
+      "path": "packages/logger"
+    },
+    {
+      "path": "packages/prisma"
+    },
+    {
+      "path": "packages/tools"
+    },
+    {
+      "path": "packages/trpc"
+    },
+    {
+      "path": "packages/tsconfig"
+    },
+    {
+      "path": "packages/types"
+    },
+    {
+      "path": "pro/frontend"
+    },
+    {
+      "path": "pro/processor"
+    }
+  ]
+}

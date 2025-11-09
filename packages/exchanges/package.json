@@ -1,0 +1,28 @@
+{
+  "name": "@opentrader/exchanges",
+  "version": "0.0.0",
+  "private": true,
+  "description": "",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client/index.ts",
+    "./server": "./src/server/cache/providers/prisma-cache.provider.ts",
+    "./dist": "./src/index.ts"
+  },
+  "author": "bludnic",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@opentrader/tsconfig": "workspace:*",
+    "@opentrader/types": "workspace:*",
+    "@types/node": "^22.10.2",
+    "typescript": "5.8.3"
+  },
+  "dependencies": {
+    "@opentrader/db": "workspace:*",
+    "@opentrader/tools": "workspace:*",
+    "ccxt": "4.4.91"
+  }
+}

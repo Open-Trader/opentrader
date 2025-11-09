@@ -1,0 +1,263 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+generator zod {
+  provider          = "zod-prisma-types"
+  output            = "./zod"
+  useMultipleFiles  = true
+  // Since there is a known typscript error when using zod greater than 3.21.1 you can
+  // now use type assertions to circumvent the error and use the latest version of zod.
+  // @todo remove when issue will be resolved
+  // @see https://github.com/chrishoermann/zod-prisma-types#usetypeassertions
+  useTypeAssertions = true
+}
+
+// datasource postgres {
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL") // uses connection pooling
+// }
+
+datasource sqlite {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// enum ExchangeCode {
+//   OKX
+//   BYBIT
+//   BINANCE
+//   KRAKEN
+//   COINBASE
+//   GATEIO
+// }
+//
+// enum BotType {
+//   Bot
+//   GridBot
+// }
+//
+// enum OrderSide {
+//   Buy
+//   Sell
+// }
+//
+// enum OrderStatus {
+//   Idle
+//   Placed
+//   Filled
+//   Canceled
+//   Revoked
+//   Deleted
+// }
+//
+// enum OrderType {
+//   Limit
+//   Market
+// }
+//
+// enum UserRole {
+//   User
+//   Admin
+// }
+//
+// enum SmartTradeType {
+//   Trade
+//   DCA
+// }
+//
+// // SmartTrade enums
+// enum EntryType {
+//   Order
+//   Ladder
+// }
+//
+// enum TakeProfitType {
+//   Order
+//   Ladder
+//   None
+// }
+//
+// enum EntityType {
+//   EntryOrder
+//   TakeProfitOrder
+//   StopLossOrder
+//   SafetyOrder
+// }
+
+model User {
+  id          Int     @id @default(autoincrement())
+  email       String  @unique
+  displayName String?
+  role        String  @default("User")
+
+  exchangeAccounts ExchangeAccount[]
+  smartTrades      SmartTrade[]
+  bots             Bot[]
+}
+
+model ExchangeAccount {
+  id           Int     @id @default(autoincrement())
+  name         String
+  label        String? @unique
+  exchangeCode String // ExchangeCode
+
+  // Credentials
+  apiKey         String
+  secretKey      String
+  password       String?
+  isDemoAccount  Boolean @default(false)
+  isPaperAccount Boolean @default(false)
+
+  owner     User     @relation(fields: [ownerId], references: [id])
+  ownerId   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  smartTrades SmartTrade[]
+  orders      Order[]
+
+  // Will include the only the bots that uses this account as primary
+  primaryBots Bot[]
+  bots        Bot[] @relation(name: "AdditionalExchangeAccounts")
+
+  expired Boolean @default(false)
+}
+
+model SmartTrade {
+  id Int @id @default(autoincrement())
+
+  type           String // SmartTradeType
+  entryType      String // EntryType
+  takeProfitType String // TakeProfitType
+
+  symbol String // Optional in case of multiple symbols trading, e.g. for Triangular Arbitrage
+  orders Order[]
+
+  ref String? // user provided reference value
+
+  exchangeAccount   ExchangeAccount @relation(fields: [exchangeAccountId], references: [id])
+  exchangeAccountId Int
+
+  bot   Bot? @relation(fields: [botId], references: [id], onDelete: Cascade)
+  botId Int?
+
+  owner   User @relation(fields: [ownerId], references: [id])
+  ownerId Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id                Int             @id @default(autoincrement())
+  status            String          @default("Idle") // OrderStatus
+  type              String // OrderType
+  entityType        String // EntityType
+  side              String // OrderSide
+  price             Float? // Market orders doesn't require price to be specified
+  stopPrice         Float? // If specified, then it is a Stop-Limit or Stop-Market order
+  relativePrice     Float? // Percentage deviation calculated from the entry price for orders where the exact price is unknown (e.g., DCA orders)
+  filledPrice       Float?
+  fee               Float?
+  symbol            String
+  exchangeAccount   ExchangeAccount @relation(fields: [exchangeAccountId], references: [id])
+  exchangeAccountId Int
+
+  exchangeOrderId String?
+
+  quantity     Float
+  smartTrade   SmartTrade @relation(fields: [smartTradeId], references: [id], onDelete: Cascade)
+  smartTradeId Int
+
+  createdAt DateTime  @default(now())
+  placedAt  DateTime?
+  syncedAt  DateTime? @default(now()) // Last time the exchange Order status was synced with the DB
+  filledAt  DateTime?
+
+  updatedAt DateTime @updatedAt
+}
+
+model Bot {
+  id      Int     @id @default(autoincrement())
+  type    String // BotType
+  name    String
+  label   String? @unique
+  symbol  String
+  enabled Boolean @default(false)
+  logging Boolean @default(true)
+
+  // Template name that will be executed by the bot
+  // e.g. `gridBot`, see templates in @opentrader/templates
+  template String
+
+  // Bot template will be executed at the candle close of specified timeframe.
+  // If not specified than the template will be executed on SmartTrade filled event.
+  timeframe String?
+
+  // Means that the bot template is being processed right now.
+  // This must guarantee that the bot template will not be processed
+  // several times simultaneously.
+  // After process finish, the value must be set back to `false`.
+  processing Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  settings String // JSON stringified
+  state    String @default("{}") // JSON stringified
+
+  smartTrades SmartTrade[]
+
+  exchangeAccount   ExchangeAccount @relation(fields: [exchangeAccountId], references: [id])
+  exchangeAccountId Int
+
+  additionalExchangeAccounts ExchangeAccount[] @relation(name: "AdditionalExchangeAccounts")
+
+  owner   User     @relation(fields: [ownerId], references: [id])
+  ownerId Int
+  logs    BotLog[]
+
+  // @todo initialInvestment
+}
+
+model BotLog {
+  id               Int      @id @default(autoincrement())
+  action           String // type StrategyAction
+  triggerEventType String? // type StrategyEventType
+  context          String? // type MarketData, JSON stringified
+  error            String? // type StrategyError, An error occured during the strategy execution, JSON striginfied
+  startedAt        DateTime // start execution time
+  endedAt          DateTime // end execution time
+  createdAt        DateTime @default(now())
+  bot              Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+  botId            Int
+}
+
+model Markets {
+  exchangeCode String   @id // ExchangeCode
+  markets      String // JSON stringified
+  updatedAt    DateTime @updatedAt
+}
+
+model PaperAsset {
+  currency String @id
+  balance  Float
+}
+
+model PaperOrder {
+  id                 Int      @id @default(autoincrement())
+  type               String // OrderType
+  symbol             String
+  side               String // OrderSide
+  quantity           Float
+  price              Float?
+  filledPrice        Float?
+  lastTradeTimestamp DateTime @default(now())
+  status             String   @default("open") // OrderStatus
+  fee                Float    @default(0)
+  createdAt          DateTime @default(now())
+}

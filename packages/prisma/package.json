@@ -1,0 +1,32 @@
+{
+  "name": "@opentrader/prisma",
+  "version": "0.0.0",
+  "private": true,
+  "description": "",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "postinstall": "prisma generate"
+  },
+  "author": "bludnic",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@opentrader/tsconfig": "workspace:*",
+    "@types/node": "^22.10.2",
+    "ts-node": "10.9.2",
+    "tsx": "^4.19.2",
+    "typescript": "5.8.3"
+  },
+  "dependencies": {
+    "@opentrader/tools": "workspace:*",
+    "@opentrader/types": "workspace:*",
+    "@prisma/client": "6.9.0",
+    "prisma": "6.9.0",
+    "zod": "3.25.65",
+    "zod-prisma-types": "3.2.4"
+  },
+  "prisma": {
+    "schema": "src/schema.prisma",
+    "seed": "node seed.mjs"
+  }
+}

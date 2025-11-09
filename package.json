@@ -1,0 +1,57 @@
+{
+  "name": "root",
+  "private": true,
+  "author": "bludnic",
+  "license": "Apache-2.0",
+  "workspaces": [
+    "app",
+    "packages/*",
+    "pro/*"
+  ],
+  "engines": {
+    "node": "~22.12"
+  },
+  "bin": {
+    "dev": "./bin/dev.sh",
+    "cli": "./bin/cli.sh"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.10",
+    "@moonrepo/cli": "1.37.2",
+    "execa": "^9.5.2",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.2",
+    "oxlint": "^1.1.0",
+    "prettier": "^3.4.2",
+    "prettier-plugin-prisma": "^5.0.0",
+    "ts-node": "10.9.2",
+    "tsconfig-moon": "^1.4.0",
+    "typescript": "5.8.3",
+    "vitest": "^3.2.3"
+  },
+  "scripts": {
+    "dev": "moon run :dev",
+    "build": "moon run :build",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "test": "vitest",
+    "typecheck": "moon run :typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "release": "moon run :build && moon run :dts && ./scripts/release.mjs",
+    "ui:sync": "moon run frontend:build && rm -rf app/frontend && cp -r pro/frontend/dist app/frontend && git add app/frontend",
+    "debug": "ts-node --transpile-only packages/cli/src/index.ts trade debug"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "oxlint",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ],
+    "*.prisma": [
+      "prettier --write"
+    ]
+  },
+  "packageManager": "pnpm@10.12.1"
+}

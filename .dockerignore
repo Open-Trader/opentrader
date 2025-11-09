@@ -1,0 +1,7 @@
+**/node_modules
+.git
+*.md
+.next
+.dist
+.env
+.moon/cache

@@ -1,0 +1,22 @@
+{
+  "name": "@opentrader/indicators",
+  "version": "0.0.0",
+  "private": true,
+  "description": "",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "author": "bludnic",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@opentrader/tsconfig": "workspace:*",
+    "@opentrader/types": "workspace:*",
+    "@types/node": "^22.10.2",
+    "ts-node": "10.9.2",
+    "typescript": "5.8.3",
+    "vitest": "^3.2.3"
+  },
+  "dependencies": {
+    "technicalindicators": "^3.1.0"
+  }
+}

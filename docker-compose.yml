@@ -1,82 +1,69 @@
-version: "3.9"
 services:
-
-  db:
-    image: postgres:16
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: opentrader-dev
+    ports:
+      - "5000:5000"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - ./opentrader_data:/app/data
+    environment:
+      DATABASE_URL: file:/app/data/dev.db
+      ADMIN_PASSWORD: opentrader
+      HOST: 0.0.0.0
+      PORT: 5000
+  monolith:
+    build:
+      context: .
+      dockerfile: pro.Dockerfile
+      args:
+        ADMIN_PASSWORD: opentrader
+        GITHUB_TOKEN: "github_classic_token"
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./opentrader_data:/app/data
+    environment:
+      DATABASE_URL: file:/app/data/dev.db
+      ADMIN_PASSWORD: opentrader
+      PORT: 5000
+  #    depends_on:
+  #      - database
+  #    platform: linux/amd64 # works slow when building on Mac M1
+  processor:
+    build:
+      context: .
+      dockerfile: apps/processor/Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      ADMIN_PASSWORD: opentrader
+  #    depends_on:
+  #      - database
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+      args:
+        ADMIN_PASSWORD: opentrader
+      network: host
+    ports:
+      - "3000:3000"
+    environment:
+      ADMIN_PASSWORD: opentrader
+  #    depends_on:
+  #      - database
+  database:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 20
-    restart: always
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-          cpus: "0.5"
-
-  api:
-    build:
-      context: .
-      dockerfile: services/api/Dockerfile
-    env_file: .env
-    depends_on:
-      db:
-        condition: service_healthy
-    ports:
-      - "8000:8000"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: on-failure
-    user: "1000:1000"
-    deploy:
-      resources:
-        limits:
-          memory: 1024M
-          cpus: "1.0"
-
-  worker:
-    build: ./services/worker
-    env_file: .env
-    depends_on:
-      db:
-        condition: service_healthy
-    restart: on-failure
-    user: "1000:1000"
-    deploy:
-      resources:
-        limits:
-          memory: 1024M
-          cpus: "1.0"
-
-  ui:
-    build:
-      context: .
-      dockerfile: services/ui/Dockerfile
-    env_file: .env
-    depends_on:
-      api:
-        condition: service_started
-    ports:
-      - "8501:8501"
-    restart: on-failure
-    user: "1000:1000"
-    deploy:
-      resources:
-        limits:
-          memory: 1024M
-          cpus: "1.0"
-
 volumes:
-  db_data:
+  postgres-db:

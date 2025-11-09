@@ -1,0 +1,72 @@
+{
+  "name": "opentrader",
+  "version": "1.0.0-beta.29",
+  "description": "OpenTrader is a powerful open-source crypto trading bot designated to automate your trading strategies on various cryptocurrency exchanges.",
+  "keywords": [
+    "bot",
+    "crypto",
+    "trading",
+    "algotrading",
+    "technical-indicators",
+    "custom-strategy",
+    "dca-bot",
+    "grid-bot",
+    "rsi-strategy"
+  ],
+  "type": "module",
+  "main": "dist/main.mjs",
+  "types": "dist/main.d.ts",
+  "exports": {
+    ".": "./dist/main.mjs"
+  },
+  "bin": {
+    "opentrader": "./bin/opentrader.mjs"
+  },
+  "author": "bludnic",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bludnic/opentrader.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bludnic/opentrader/issues"
+  },
+  "homepage": "https://github.com/bludnic/opentrader#readme",
+  "devDependencies": {
+    "@opentrader/tsconfig": "workspace:*",
+    "@opentrader/types": "workspace:*",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.10.2",
+    "dts-bundle-generator": "^9.5.1",
+    "esbuild": "^0.23.1",
+    "rimraf": "^6.0.1",
+    "ts-loader": "^9.5.1",
+    "ts-node": "10.9.2",
+    "tsup": "^8.3.5",
+    "typescript": "5.8.3"
+  },
+  "dependencies": {
+    "@opentrader/backtesting": "workspace:*",
+    "@opentrader/bot": "workspace:*",
+    "@opentrader/bot-processor": "workspace:*",
+    "@opentrader/bot-templates": "workspace:*",
+    "@opentrader/db": "workspace:*",
+    "@opentrader/exchanges": "workspace:*",
+    "@opentrader/logger": "workspace:*",
+    "@opentrader/tools": "workspace:*",
+    "@opentrader/trpc": "workspace:*",
+    "@prisma/client": "6.9.0",
+    "@trpc/client": "^11.4.1",
+    "@trpc/server": "^11.4.1",
+    "ccxt": "4.4.91",
+    "commander": "^12.1.0",
+    "execa": "^9.5.2",
+    "express": "^4.21.2",
+    "json5": "^2.2.3",
+    "pino": "^9.5.0",
+    "pino-pretty": "^11.3.0",
+    "random-words": "^2.0.1",
+    "superjson": "^2.2.2",
+    "zod": "3.25.65"
+  }
+}

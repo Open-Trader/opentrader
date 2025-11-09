@@ -1,0 +1,61 @@
+{
+  "extends": "@opentrader/tsconfig/esm.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "../../dts/packages/trpc",
+    "paths": {
+      "@opentrader/bot-processor": ["../bot-processor/src/index.ts"],
+      "@opentrader/bot-processor/*": ["../bot-processor/src/*"],
+      "@opentrader/bot-templates": ["../bot-templates/src/index.ts"],
+      "@opentrader/bot-templates/*": ["../bot-templates/src/*"],
+      "@opentrader/db": ["../db/src/index.ts"],
+      "@opentrader/db/*": ["../db/src/*"],
+      "@opentrader/event-bus": ["../event-bus/src/index.ts"],
+      "@opentrader/event-bus/*": ["../event-bus/src/*"],
+      "@opentrader/exchanges": ["../exchanges/src/index.ts"],
+      "@opentrader/exchanges/*": ["../exchanges/src/*"],
+      "@opentrader/prisma": ["../prisma/src/index.ts"],
+      "@opentrader/prisma/*": ["../prisma/src/*"],
+      "@opentrader/tools": ["../tools/src/index.ts"],
+      "@opentrader/tools/*": ["../tools/src/*"],
+      "@opentrader/tsconfig/*": ["../tsconfig/*"],
+      "@opentrader/types": ["../types/src/index.ts"],
+      "@opentrader/types/*": ["../types/src/*"],
+      "@opentrader/backtesting": ["../backtesting/src/index.ts"],
+      "@opentrader/backtesting/*": ["../backtesting/src/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "references": [
+    {
+      "path": "../backtesting"
+    },
+    {
+      "path": "../bot-processor"
+    },
+    {
+      "path": "../bot-templates"
+    },
+    {
+      "path": "../db"
+    },
+    {
+      "path": "../event-bus"
+    },
+    {
+      "path": "../exchanges"
+    },
+    {
+      "path": "../prisma"
+    },
+    {
+      "path": "../tools"
+    },
+    {
+      "path": "../tsconfig"
+    },
+    {
+      "path": "../types"
+    }
+  ]
+}
