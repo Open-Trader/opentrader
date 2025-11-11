@@ -1,0 +1,22 @@
+// Example strategy configuration for OpenTraderX
+// Copy to /opt/opentrader/config.json5 and adjust values
+{
+  // Select one of: "grid", "dca", "rsi"
+  template: "grid",
+
+  // Strategy-specific settings
+  settings: {
+    // GRID strategy
+    highPrice: 70000,       // upper price of the grid
+    lowPrice: 60000,        // lower price of the grid
+    gridLevels: 20,         // number of grid levels
+    quantityPerGrid: 0.0001 // quantity in base currency per grid
+  },
+
+  // Trading pair
+  pair: "BTC/USDT",
+
+  // Exchange account label defined in exchanges.json5
+  exchange: "DEFAULT"
+}
+

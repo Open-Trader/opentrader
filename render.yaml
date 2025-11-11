@@ -1,0 +1,31 @@
+databases:
+  - name: cryptodb
+    databaseName: cryptodb
+    plan: free
+
+services:
+  - type: web
+    name: crypto-risk-api
+    runtime: docker
+    rootDir: services/api
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cryptodb
+          property: connectionString
+      - key: SYMBOLS
+        value: binance:BTC/USDT,binance:ETH/USDT,bybit:SOL/USDT
+
+  - type: web
+    name: crypto-risk-ui
+    runtime: docker
+    rootDir: services/ui
+    plan: free
+    envVars:
+      - key: API_CANDIDATES
+        value: https://crypto-risk-api.onrender.com,http://api:8000,http://localhost:8000
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cryptodb
+          property: connectionString

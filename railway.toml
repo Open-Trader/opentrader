@@ -1,0 +1,9 @@
+# Railway configuration for Crypto Risk Dashboard
+# This file defines services for Railway deployment
+
+[build]
+builder = "DOCKERFILE"
+
+# Service configuration is typically done via Railway dashboard
+# or through railway.json in each service directory
+
