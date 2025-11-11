@@ -48,7 +48,7 @@ export class App {
     await server.listen();
 
     logger.info(`RPC Server listening on port ${params.server.port}`);
-    logger.info(`OpenTrader UI: http://${params.server.host}:${params.server.port}`);
+    logger.info(`OpenTraderX UI: http://${params.server.host}:${params.server.port}`);
 
     return new App(platform, server);
   }
