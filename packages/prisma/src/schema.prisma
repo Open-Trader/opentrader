@@ -17,73 +17,83 @@ generator zod {
   useTypeAssertions = true
 }
 
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL") // uses connection pooling
+// datasource postgres {
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL") // uses connection pooling
+// }
+
+datasource sqlite {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
-enum ExchangeCode {
-  OKX
-}
-
-enum BotType {
-  Bot
-  GridBot
-}
-
-enum OrderSide {
-  Buy
-  Sell
-}
-
-enum OrderStatus {
-  Idle
-  Placed
-  Filled
-  Canceled
-  Revoked
-  Deleted
-}
-
-enum OrderType {
-  Limit
-  Market
-}
-
-enum UserRole {
-  User
-  Admin
-}
-
-enum SmartTradeType {
-  Trade
-  DCA
-}
-
-// SmartTrade enums
-enum EntryType {
-  Order
-  Ladder
-}
-
-enum TakeProfitType {
-  Order
-  Ladder
-}
-
-enum EntityType {
-  EntryOrder
-  TakeProfitOrder
-  StopLossOrder
-  SafetyOrder
-}
+// enum ExchangeCode {
+//   OKX
+//   BYBIT
+//   BINANCE
+//   KRAKEN
+//   COINBASE
+//   GATEIO
+// }
+//
+// enum BotType {
+//   Bot
+//   GridBot
+// }
+//
+// enum OrderSide {
+//   Buy
+//   Sell
+// }
+//
+// enum OrderStatus {
+//   Idle
+//   Placed
+//   Filled
+//   Canceled
+//   Revoked
+//   Deleted
+// }
+//
+// enum OrderType {
+//   Limit
+//   Market
+// }
+//
+// enum UserRole {
+//   User
+//   Admin
+// }
+//
+// enum SmartTradeType {
+//   Trade
+//   DCA
+// }
+//
+// // SmartTrade enums
+// enum EntryType {
+//   Order
+//   Ladder
+// }
+//
+// enum TakeProfitType {
+//   Order
+//   Ladder
+//   None
+// }
+//
+// enum EntityType {
+//   EntryOrder
+//   TakeProfitOrder
+//   StopLossOrder
+//   SafetyOrder
+// }
 
 model User {
-  id          Int      @id @default(autoincrement())
-  email       String   @unique
+  id          Int     @id @default(autoincrement())
+  email       String  @unique
   displayName String?
-  role        UserRole @default(User)
-  password    String
+  role        String  @default("User")
 
   exchangeAccounts ExchangeAccount[]
   smartTrades      SmartTrade[]
@@ -91,35 +101,42 @@ model User {
 }
 
 model ExchangeAccount {
-  id           Int          @id @default(autoincrement())
+  id           Int     @id @default(autoincrement())
   name         String
-  exchangeCode ExchangeCode // ExchangeCode
+  label        String? @unique
+  exchangeCode String // ExchangeCode
 
   // Credentials
-  apiKey        String
-  secretKey     String
-  password      String?
-  isDemoAccount Boolean @default(false)
+  apiKey         String
+  secretKey      String
+  password       String?
+  isDemoAccount  Boolean @default(false)
+  isPaperAccount Boolean @default(false)
 
   owner     User     @relation(fields: [ownerId], references: [id])
   ownerId   Int
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   smartTrades SmartTrade[]
-  bots        Bot[]
+  orders      Order[]
+
+  // Will include the only the bots that uses this account as primary
+  primaryBots Bot[]
+  bots        Bot[] @relation(name: "AdditionalExchangeAccounts")
+
+  expired Boolean @default(false)
 }
 
 model SmartTrade {
   id Int @id @default(autoincrement())
 
-  type           SmartTradeType
-  entryType      EntryType
-  takeProfitType TakeProfitType
+  type           String // SmartTradeType
+  entryType      String // EntryType
+  takeProfitType String // TakeProfitType
 
-  baseCurrency     String
-  quoteCurrency    String
-  exchangeSymbolId String // BTC/USDT, for future usage with Margin/Futures the symbolId may differ from patter `baseCurrency/quoteCurrency`
-  orders           Order[]
+  symbol String // Optional in case of multiple symbols trading, e.g. for Triangular Arbitrage
+  orders Order[]
 
   ref String? // user provided reference value
 
@@ -137,14 +154,19 @@ model SmartTrade {
 }
 
 model Order {
-  id          Int         @id @default(autoincrement())
-  status      OrderStatus @default(Idle)
-  type        OrderType
-  entityType  EntityType
-  side        OrderSide
-  price       Float? // Market orders doesn't require price to be specified
-  filledPrice Float?
-  fee         Float?
+  id                Int             @id @default(autoincrement())
+  status            String          @default("Idle") // OrderStatus
+  type              String // OrderType
+  entityType        String // EntityType
+  side              String // OrderSide
+  price             Float? // Market orders doesn't require price to be specified
+  stopPrice         Float? // If specified, then it is a Stop-Limit or Stop-Market order
+  relativePrice     Float? // Percentage deviation calculated from the entry price for orders where the exact price is unknown (e.g., DCA orders)
+  filledPrice       Float?
+  fee               Float?
+  symbol            String
+  exchangeAccount   ExchangeAccount @relation(fields: [exchangeAccountId], references: [id])
+  exchangeAccountId Int
 
   exchangeOrderId String?
 
@@ -161,12 +183,13 @@ model Order {
 }
 
 model Bot {
-  id            Int     @id @default(autoincrement())
-  type          BotType
-  name          String
-  baseCurrency  String
-  quoteCurrency String
-  enabled       Boolean @default(false)
+  id      Int     @id @default(autoincrement())
+  type    String // BotType
+  name    String
+  label   String? @unique
+  symbol  String
+  enabled Boolean @default(false)
+  logging Boolean @default(true)
 
   // Template name that will be executed by the bot
   // e.g. `gridBot`, see templates in @opentrader/templates
@@ -184,30 +207,57 @@ model Bot {
 
   createdAt DateTime @default(now())
 
-  settings Json // @todo gridLines
+  settings String // JSON stringified
+  state    String @default("{}") // JSON stringified
 
   smartTrades SmartTrade[]
 
   exchangeAccount   ExchangeAccount @relation(fields: [exchangeAccountId], references: [id])
   exchangeAccountId Int
 
-  owner   User @relation(fields: [ownerId], references: [id])
+  additionalExchangeAccounts ExchangeAccount[] @relation(name: "AdditionalExchangeAccounts")
+
+  owner   User     @relation(fields: [ownerId], references: [id])
   ownerId Int
+  logs    BotLog[]
 
   // @todo initialInvestment
 }
 
-model Markets {
-  exchangeCode ExchangeCode @id
-  markets      Json
-  updatedAt    DateTime     @updatedAt
+model BotLog {
+  id               Int      @id @default(autoincrement())
+  action           String // type StrategyAction
+  triggerEventType String? // type StrategyEventType
+  context          String? // type MarketData, JSON stringified
+  error            String? // type StrategyError, An error occured during the strategy execution, JSON striginfied
+  startedAt        DateTime // start execution time
+  endedAt          DateTime // end execution time
+  createdAt        DateTime @default(now())
+  bot              Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+  botId            Int
 }
 
-// model BotState {
-//   id Int @id @default(autoincrement())
-//   type String // smartTradeRef
-//   key String // index provided by user
-//   value String // smartTrade.id
-//   bot Bot @relation(fields: [botId], references: [id])
-//   botId Int
-// }
+model Markets {
+  exchangeCode String   @id // ExchangeCode
+  markets      String // JSON stringified
+  updatedAt    DateTime @updatedAt
+}
+
+model PaperAsset {
+  currency String @id
+  balance  Float
+}
+
+model PaperOrder {
+  id                 Int      @id @default(autoincrement())
+  type               String // OrderType
+  symbol             String
+  side               String // OrderSide
+  quantity           Float
+  price              Float?
+  filledPrice        Float?
+  lastTradeTimestamp DateTime @default(now())
+  status             String   @default("open") // OrderStatus
+  fee                Float    @default(0)
+  createdAt          DateTime @default(now())
+}

@@ -1,0 +1,40 @@
+{
+  "name": "@opentrader/bot",
+  "version": "0.0.0",
+  "private": true,
+  "description": "",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "author": "bludnic",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@opentrader/tsconfig": "workspace:*",
+    "@opentrader/types": "workspace:*",
+    "@types/async": "^3.2.24",
+    "@types/node": "^22.10.2",
+    "ts-node": "10.9.2",
+    "typescript": "5.8.3",
+    "vitest": "^3.2.3"
+  },
+  "dependencies": {
+    "@fastify/cors": "^10.0.2",
+    "@fastify/static": "^8.0.3",
+    "@opentrader/bot-processor": "workspace:*",
+    "@opentrader/bot-templates": "workspace:*",
+    "@opentrader/db": "workspace:*",
+    "@opentrader/event-bus": "workspace:*",
+    "@opentrader/exchanges": "workspace:*",
+    "@opentrader/logger": "workspace:*",
+    "@opentrader/tools": "workspace:*",
+    "@opentrader/trpc": "workspace:*",
+    "@prisma/client": "6.9.0",
+    "@trpc/client": "^11.4.1",
+    "@trpc/server": "^11.4.1",
+    "async": "^3.2.6",
+    "ccxt": "4.4.91",
+    "cron": "^3.3.1",
+    "emittery": "^1.0.3",
+    "fastify": "^5.3.2"
+  }
+}

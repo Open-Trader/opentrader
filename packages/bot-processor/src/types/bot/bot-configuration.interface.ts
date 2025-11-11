@@ -1,10 +1,9 @@
-import type { ExchangeCode } from "@opentrader/types";
+import type { BarSize, ExchangeCode } from "@opentrader/types";
 
-export type IBotConfiguration = {
+export type IBotConfiguration<T = any> = {
   id: number;
-  baseCurrency: string;
-  quoteCurrency: string;
-  exchangeCode: ExchangeCode;
-  settings: Record<string, any>;
-  // @todo type
+  symbol: string;
+  exchangeCode?: ExchangeCode; // @todo maybe remove
+  settings: T;
+  timeframe?: BarSize | null;
 };

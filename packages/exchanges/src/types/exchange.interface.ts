@@ -1,4 +1,4 @@
-import type {
+import {
   IAccountAsset,
   IGetCandlesticksRequest,
   ICandlestick,
@@ -8,67 +8,60 @@ import type {
   ICancelLimitOrderResponse,
   IGetLimitOrderRequest,
   IGetLimitOrderResponse,
-  IPlaceLimitOrderRequest,
-  IPlaceLimitOrderResponse,
-  ITradingPairSymbolRequest,
   ISymbolInfo,
   IGetSymbolInfoRequest,
   IGetOpenOrdersRequest,
   IGetOpenOrdersResponse,
   IGetClosedOrdersRequest,
   IGetClosedOrdersResponse,
-  IWatchOrdersRequest,
-  IWatchOrdersResponse,
+  IPlaceOrderRequest,
+  IPlaceOrderResponse,
+  IPlaceLimitOrderRequest,
+  IPlaceLimitOrderResponse,
+  IPlaceMarketOrderRequest,
+  IPlaceMarketOrderResponse,
   IPlaceStopOrderRequest,
   IPlaceStopOrderResponse,
-  IPlaceStopLimitOrderRequest,
-  IPlaceStopLimitOrderResponse,
-  IPlaceStopMarketOrderRequest,
-  IPlaceStopMarketOrderResponse,
-  IPlaceOCOOrderRequest,
-  IPlaceOCOOrderResponse,
+  IWatchOrdersRequest,
+  IWatchOrdersResponse,
+  ExchangeCode,
+  IWatchCandlesRequest,
+  IWatchTradesRequest,
+  IWatchTradesResponse,
+  IOrderbook,
+  ITicker,
 } from "@opentrader/types";
-import type { Dictionary, Market, okex5 } from "ccxt";
+import type { Market, Exchange } from "ccxt";
 
 export interface IExchange {
-  ccxt: okex5;
+  isPaper: boolean;
+  isDemo: boolean;
 
-  loadMarkets: () => Promise<Dictionary<Market>>; // forward to `ccxt.loadMarkets`
+  ccxt: Exchange;
+  exchangeCode: ExchangeCode;
+
+  destroy: () => Promise<void>;
+
+  loadMarkets: () => Promise<Record<string, Market>>; // forward to `ccxt.loadMarkets`
 
   accountAssets: () => Promise<IAccountAsset[]>;
-  getLimitOrder: (
-    body: IGetLimitOrderRequest,
-  ) => Promise<IGetLimitOrderResponse>;
-  placeLimitOrder: (
-    body: IPlaceLimitOrderRequest,
-  ) => Promise<IPlaceLimitOrderResponse>;
-  cancelLimitOrder: (
-    body: ICancelLimitOrderRequest,
-  ) => Promise<ICancelLimitOrderResponse>;
-  placeStopOrder: (
-    body: IPlaceStopOrderRequest,
-  ) => Promise<IPlaceStopOrderResponse>;
-  placeStopLimitOrder: (
-    body: IPlaceStopLimitOrderRequest,
-  ) => Promise<IPlaceStopLimitOrderResponse>;
-  placeStopMarketOrder: (
-    body: IPlaceStopMarketOrderRequest,
-  ) => Promise<IPlaceStopMarketOrderResponse>;
-  placeOCOOrder: (
-    body: IPlaceOCOOrderRequest,
-  ) => Promise<IPlaceOCOOrderResponse>;
-  getOpenOrders: (
-    body: IGetOpenOrdersRequest,
-  ) => Promise<IGetOpenOrdersResponse>;
-  getClosedOrders: (
-    body: IGetClosedOrdersRequest,
-  ) => Promise<IGetClosedOrdersResponse>;
-  getMarketPrice: (
-    params: IGetMarketPriceRequest,
-  ) => Promise<IGetMarketPriceResponse>;
+  getLimitOrder: (body: IGetLimitOrderRequest) => Promise<IGetLimitOrderResponse>;
+  placeOrder: (body: IPlaceOrderRequest) => Promise<IPlaceOrderResponse>;
+  placeLimitOrder: (body: IPlaceLimitOrderRequest) => Promise<IPlaceLimitOrderResponse>;
+  placeMarketOrder: (boyd: IPlaceMarketOrderRequest) => Promise<IPlaceMarketOrderResponse>;
+  cancelLimitOrder: (body: ICancelLimitOrderRequest) => Promise<ICancelLimitOrderResponse>;
+  placeStopOrder: (body: IPlaceStopOrderRequest) => Promise<IPlaceStopOrderResponse>;
+  getOpenOrders: (body: IGetOpenOrdersRequest) => Promise<IGetOpenOrdersResponse>;
+  getClosedOrders: (body: IGetClosedOrdersRequest) => Promise<IGetClosedOrdersResponse>;
+  getTicker: (symbol: string) => Promise<ITicker>;
+  getMarketPrice: (params: IGetMarketPriceRequest) => Promise<IGetMarketPriceResponse>;
   getCandlesticks: (params: IGetCandlesticksRequest) => Promise<ICandlestick[]>;
   getSymbols: () => Promise<ISymbolInfo[]>;
   getSymbol: (params: IGetSymbolInfoRequest) => Promise<ISymbolInfo>;
-  tradingPairSymbol: (params: ITradingPairSymbolRequest) => string;
   watchOrders: (params?: IWatchOrdersRequest) => Promise<IWatchOrdersResponse>;
+  watchCandles: (symbol: IWatchCandlesRequest) => Promise<ICandlestick[]>;
+  watchTrades: (symbol: IWatchTradesRequest) => Promise<IWatchTradesResponse>;
+  getOrderbook: (symbol: string) => Promise<IOrderbook>;
+  watchOrderbook: (symbol: string) => Promise<IOrderbook>;
+  watchTicker: (symbol: string) => Promise<ITicker>;
 }

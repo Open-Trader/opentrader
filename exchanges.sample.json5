@@ -1,0 +1,9 @@
+{
+  DEFAULT: {
+    name: "OKX Live",
+    apiKey: "exchange_api_key",
+    secretKey: "exchange_secret_key",
+    password: "exchange_password",
+    exchangeCode: "OKX", // OKX | BYBIT | BITGET | BINANCE | KRAKEN | COINBASE | GATEIO
+  },
+}

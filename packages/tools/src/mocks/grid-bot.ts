@@ -1,5 +1,5 @@
 import type { IGridLine, IGridBotLevel } from "@opentrader/types";
-import { OrderStatusEnum } from "@opentrader/types";
+import { XOrderStatus } from "@opentrader/types";
 
 export const ORDER_QUANTITY = 20;
 
@@ -14,36 +14,36 @@ export const GRID_LINES: IGridLine[] = [
 
 export const GRID_LEVELS: IGridBotLevel[] = [
   {
-    buy: { price: 10, status: OrderStatusEnum.Idle, quantity: ORDER_QUANTITY },
-    sell: { price: 12, status: OrderStatusEnum.Idle, quantity: ORDER_QUANTITY },
+    buy: { price: 10, status: XOrderStatus.Idle, quantity: ORDER_QUANTITY },
+    sell: { price: 12, status: XOrderStatus.Idle, quantity: ORDER_QUANTITY },
   },
   {
-    buy: { price: 12, status: OrderStatusEnum.Idle, quantity: ORDER_QUANTITY },
-    sell: { price: 14, status: OrderStatusEnum.Idle, quantity: ORDER_QUANTITY },
+    buy: { price: 12, status: XOrderStatus.Idle, quantity: ORDER_QUANTITY },
+    sell: { price: 14, status: XOrderStatus.Idle, quantity: ORDER_QUANTITY },
   },
   {
     buy: {
       price: 14,
-      status: OrderStatusEnum.Filled,
+      status: XOrderStatus.Filled,
       quantity: ORDER_QUANTITY,
     },
-    sell: { price: 16, status: OrderStatusEnum.Idle, quantity: ORDER_QUANTITY },
+    sell: { price: 16, status: XOrderStatus.Idle, quantity: ORDER_QUANTITY },
   },
   {
     buy: {
       price: 16,
-      status: OrderStatusEnum.Filled,
+      status: XOrderStatus.Filled,
       quantity: ORDER_QUANTITY,
     },
-    sell: { price: 18, status: OrderStatusEnum.Idle, quantity: ORDER_QUANTITY },
+    sell: { price: 18, status: XOrderStatus.Idle, quantity: ORDER_QUANTITY },
   },
   {
     buy: {
       price: 18,
-      status: OrderStatusEnum.Filled,
+      status: XOrderStatus.Filled,
       quantity: ORDER_QUANTITY,
     },
-    sell: { price: 20, status: OrderStatusEnum.Idle, quantity: ORDER_QUANTITY },
+    sell: { price: 20, status: XOrderStatus.Idle, quantity: ORDER_QUANTITY },
   },
 ];
 

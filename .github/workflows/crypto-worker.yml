@@ -1,0 +1,41 @@
+name: Crypto Data Worker
+
+on:
+  schedule:
+    - cron: '*/15 * * * *' # Every 15 minutes
+  workflow_dispatch:
+
+jobs:
+  worker:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Cache Python packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('services/worker/requirements.txt', 'services/api/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install -r services/worker/requirements.txt
+        pip install -r services/api/requirements.txt
+
+    - name: Run Data Worker
+      env:
+        # DATABASE_URL should be set from Railway PostgreSQL service
+        # Go to Railway dashboard → PostgreSQL → Variables → Copy DATABASE_URL
+        # Add it to GitHub Secrets as DATABASE_URL
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        SYMBOLS: binance:BTC/USDT,binance:ETH/USDT,binance:SOL/USDT,binance:BNB/USDT,binance:XRP/USDT,binance:DOGE/USDT,binance:ADA/USDT,binance:AVAX/USDT,binance:TRX/USDT,binance:DOT/USDT,binance:LINK/USDT,binance:MATIC/USDT,binance:UNI/USDT,binance:APT/USDT,binance:ARB/USDT,binance:ATOM/USDT,binance:OP/USDT,binance:SEI/USDT,binance:NEAR/USDT,binance:INJ/USDT,bybit:BTC/USDT,bybit:ETH/USDT,bybit:SOL/USDT,bybit:XRP/USDT,bybit:DOGE/USDT,bybit:ADA/USDT,bybit:LINK/USDT,bybit:MATIC/USDT,bybit:NEAR/USDT,bybit:APT/USDT
+        SCHEDULE_MINUTES: 15
+      run: python services/worker/run_worker.py

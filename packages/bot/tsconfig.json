@@ -1,0 +1,61 @@
+{
+  "extends": "@opentrader/tsconfig/esm.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "outDir": "../../dts/packages/bot",
+    "paths": {
+      "@opentrader/bot-templates": ["../bot-templates/src/index.ts"],
+      "@opentrader/bot-templates/*": ["../bot-templates/src/*"],
+      "@opentrader/db": ["../db/src/index.ts"],
+      "@opentrader/db/*": ["../db/src/*"],
+      "@opentrader/event-bus": ["../event-bus/src/index.ts"],
+      "@opentrader/event-bus/*": ["../event-bus/src/*"],
+      "@opentrader/exchanges": ["../exchanges/src/index.ts"],
+      "@opentrader/exchanges/*": ["../exchanges/src/*"],
+      "@opentrader/logger": ["../logger/src/index.ts"],
+      "@opentrader/logger/*": ["../logger/src/*"],
+      "@opentrader/tools": ["../tools/src/index.ts"],
+      "@opentrader/tools/*": ["../tools/src/*"],
+      "@opentrader/tsconfig/*": ["../tsconfig/*"],
+      "@opentrader/types": ["../types/src/index.ts"],
+      "@opentrader/types/*": ["../types/src/*"],
+      "@opentrader/bot-processor": ["../bot-processor/src/index.ts"],
+      "@opentrader/bot-processor/*": ["../bot-processor/src/*"],
+      "@opentrader/trpc": ["../trpc/src/index.ts"],
+      "@opentrader/trpc/*": ["../trpc/src/*"]
+    }
+  },
+  "include": ["src/**/*"],
+  "references": [
+    {
+      "path": "../bot-processor"
+    },
+    {
+      "path": "../bot-templates"
+    },
+    {
+      "path": "../db"
+    },
+    {
+      "path": "../event-bus"
+    },
+    {
+      "path": "../exchanges"
+    },
+    {
+      "path": "../logger"
+    },
+    {
+      "path": "../tools"
+    },
+    {
+      "path": "../trpc"
+    },
+    {
+      "path": "../tsconfig"
+    },
+    {
+      "path": "../types"
+    }
+  ]
+}

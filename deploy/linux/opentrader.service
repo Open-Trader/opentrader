@@ -1,0 +1,35 @@
+[Unit]
+Description=OpenTrader (self-hosted crypto trading bot)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=opentrader
+Group=opentrader
+WorkingDirectory=/opt/opentrader
+Environment=NODE_ENV=production
+# Optional: point to custom strategies directory
+# Environment=CUSTOM_STRATEGIES_PATH=/opt/opentrader/strategies
+ExecStart=/usr/bin/env opentrader up --host 0.0.0.0 --port 9966 -d
+ExecStop=/usr/bin/env opentrader down
+Restart=on-failure
+RestartSec=5
+
+# Hardening (optional)
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+PrivateTmp=true
+AmbientCapabilities=
+CapabilityBoundingSet=
+LockPersonality=true
+ProtectControlGroups=true
+ProtectKernelModules=true
+ProtectKernelTunables=true
+RestrictRealtime=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target
+

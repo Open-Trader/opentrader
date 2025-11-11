@@ -1,4 +1,5 @@
-import type { PrismaClient, $Enums } from "@prisma/client";
+import { XOrderStatus } from "@opentrader/types";
+import type { PrismaClient } from "@prisma/client";
 
 export const orderModel = (prisma: PrismaClient) => ({
   async findByExchangeOrderId(exchangeOrderId: string) {
@@ -30,24 +31,11 @@ export const orderModel = (prisma: PrismaClient) => ({
    * This method is meant to just update the `status` in the DB when
    * synchronizing with the Exchange.
    */
-  async updateStatus(
-    status: Extract<$Enums.OrderStatus, "Canceled" | "Revoked" | "Deleted">,
-    orderId: number,
-  ) {
-    const resetSmartTradeRef = {
-      update: {
-        ref: null,
-      },
-    };
-
+  async updateStatus(status: Extract<XOrderStatus, "Canceled" | "Revoked" | "Deleted">, orderId: number) {
     return prisma.order.update({
-      where: {
-        id: orderId,
-      },
-      data: {
-        status,
-        smartTrade: resetSmartTradeRef,
-      },
+      where: { id: orderId },
+      data: { status },
+      include: { smartTrade: true },
     });
   },
   async updateStatusToFilled(data: {
@@ -59,21 +47,15 @@ export const orderModel = (prisma: PrismaClient) => ({
     const { orderId, filledPrice, filledAt, fee } = data;
 
     if (filledPrice === null) {
-      throw new Error(
-        'Cannot update order status to "filled" without specifying "filledPrice"',
-      );
+      throw new Error('Cannot update order status to "filled" without specifying "filledPrice"');
     }
 
     if (fee === null) {
-      throw new Error(
-        'Cannot update order status to "filled" without specifying "fee"',
-      );
+      throw new Error('Cannot update order status to "filled" without specifying "fee"');
     }
 
     if (filledAt === null) {
-      throw new Error(
-        'Cannot update order status to "filled" without specifying "filledAt"',
-      );
+      throw new Error('Cannot update order status to "filled" without specifying "filledAt"');
     }
 
     return prisma.order.update({
@@ -86,6 +68,7 @@ export const orderModel = (prisma: PrismaClient) => ({
         filledAt,
         fee,
       },
+      include: { smartTrade: true },
     });
   },
   async updateSyncedAt(orderId: number) {

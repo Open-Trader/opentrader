@@ -1,14 +1,17 @@
-import type { IndicatorBarSize, IndicatorName } from "@opentrader/types";
-import type { UseIndicatorsEffect } from "./common/types/use-indicators-effect";
-import { USE_INDICATORS } from "./common/types/effect-types";
-import { makeEffect } from "./utils/make-effect";
+import { BarSize, TIndicatorName, TIndicatorOptions } from "@opentrader/types";
+import { makeEffect } from "./utils/index.js";
+import { USE_INDICATOR, USE_INDICATORS } from "./types/index.js";
 
-export function useIndicators<I extends IndicatorName>(
-  indicators: IndicatorName[],
-  barSize: IndicatorBarSize,
-): UseIndicatorsEffect {
-  return makeEffect(USE_INDICATORS, {
-    indicators,
-    barSize,
-  });
+type IndicatorPayload<I extends TIndicatorName = TIndicatorName> = [
+  name: I,
+  barSize: BarSize,
+  options: TIndicatorOptions<I>,
+];
+
+export function useIndicator<I extends TIndicatorName>(...[name, barSize, options]: IndicatorPayload<I>) {
+  return makeEffect(USE_INDICATOR, { name, barSize, options }, undefined);
+}
+
+export function useIndicators(payload: IndicatorPayload[]) {
+  return makeEffect(USE_INDICATORS, payload, undefined);
 }

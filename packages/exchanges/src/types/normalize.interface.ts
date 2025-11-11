@@ -13,29 +13,26 @@ import type {
   IGetMarketPriceRequest,
   IGetMarketPriceResponse,
   IGetSymbolInfoRequest,
+  IPlaceOrderRequest,
+  IPlaceOrderResponse,
   IPlaceLimitOrderRequest,
   IPlaceLimitOrderResponse,
+  IPlaceMarketOrderRequest,
+  IPlaceMarketOrderResponse,
   ISymbolInfo,
   IWatchOrdersRequest,
   IWatchOrdersResponse,
   IPlaceStopOrderRequest,
   IPlaceStopOrderResponse,
-  IPlaceStopLimitOrderRequest,
-  IPlaceStopLimitOrderResponse,
-  IPlaceStopMarketOrderRequest,
-  IPlaceStopMarketOrderResponse,
-  IPlaceOCOOrderRequest,
-  IPlaceOCOOrderResponse,
+  IWatchCandlesRequest,
+  IWatchCandlesResponse,
+  ExchangeCode,
+  IWatchTradesRequest,
+  IWatchTradesResponse,
+  IOrderbook,
+  ITicker,
 } from "@opentrader/types";
-import type {
-  Balances,
-  Exchange,
-  Order,
-  Dictionary,
-  Market,
-  OHLCV,
-  Ticker,
-} from "ccxt";
+import type { Balances, Exchange, Order, Dictionary, Market, OHLCV, Ticker, Trade, OrderBook } from "ccxt";
 
 export type Normalize = {
   accountAssets: {
@@ -44,94 +41,94 @@ export type Normalize = {
   };
 
   getLimitOrder: {
-    request: (
-      params: IGetLimitOrderRequest,
-    ) => Parameters<Exchange["fetchOrder"]>;
+    request: (params: IGetLimitOrderRequest) => Parameters<Exchange["fetchOrder"]>;
     response: (data: Order) => IGetLimitOrderResponse;
   };
 
+  placeOrder: {
+    request: (params: IPlaceOrderRequest) => Parameters<Exchange["createOrder"]>;
+    response: (data: Order) => IPlaceOrderResponse;
+  };
+
   placeLimitOrder: {
-    request: (
-      params: IPlaceLimitOrderRequest,
-    ) => Parameters<Exchange["createLimitOrder"]>;
+    request: (params: IPlaceLimitOrderRequest) => Parameters<Exchange["createLimitOrder"]>;
     response: (data: Order) => IPlaceLimitOrderResponse;
   };
 
+  placeMarketOrder: {
+    request: (params: IPlaceMarketOrderRequest) => Parameters<Exchange["createMarketOrder"]>;
+    response: (data: Order) => IPlaceMarketOrderResponse;
+  };
+
   placeStopOrder: {
-    request: (
-      params: IPlaceStopOrderRequest,
-    ) => Parameters<Exchange["createStopOrder"]>;
+    request: (params: IPlaceStopOrderRequest) => Parameters<Exchange["createStopOrder"]>;
     response: (data: Order) => IPlaceStopOrderResponse;
   };
 
-  placeStopLimitOrder: {
-    request: (params: IPlaceStopLimitOrderRequest) => any;
-    response: (data: any) => IPlaceStopLimitOrderResponse;
-  };
-
-  placeStopMarketOrder: {
-    request: (params: IPlaceStopMarketOrderRequest) => any;
-    response: (data: any) => IPlaceStopMarketOrderResponse;
-  };
-
-  placeOCOOrder: {
-    request: (params: IPlaceOCOOrderRequest) => any;
-    response: (data: any) => IPlaceOCOOrderResponse;
-  };
-
   cancelLimitOrder: {
-    request: (
-      params: ICancelLimitOrderRequest,
-    ) => Parameters<Exchange["cancelOrder"]>;
+    request: (params: ICancelLimitOrderRequest) => Parameters<Exchange["cancelOrder"]>;
     // data is not typed by `ccxt`
     // so add type manually
-    response: (
-      data: Pick<Order, "id" | "clientOrderId">,
-    ) => ICancelLimitOrderResponse;
+    response: (data: Pick<Order, "id" | "clientOrderId">) => ICancelLimitOrderResponse;
   };
 
   getOpenOrders: {
-    request: (
-      params: IGetOpenOrdersRequest,
-    ) => Parameters<Exchange["fetchOpenOrders"]>;
+    request: (params: IGetOpenOrdersRequest) => Parameters<Exchange["fetchOpenOrders"]>;
     response: (data: Order[]) => IGetOpenOrdersResponse;
   };
 
   getClosedOrders: {
-    request: (
-      params: IGetClosedOrdersRequest,
-    ) => Parameters<Exchange["fetchClosedOrders"]>;
+    request: (params: IGetClosedOrdersRequest) => Parameters<Exchange["fetchClosedOrders"]>;
     response: (data: Order[]) => IGetClosedOrdersResponse;
   };
 
+  getTicker: {
+    request: (symbol: string) => Parameters<Exchange["fetchTicker"]>;
+    response: (data: Ticker) => ITicker;
+  };
+
   getMarketPrice: {
-    request: (
-      params: IGetMarketPriceRequest,
-    ) => Parameters<Exchange["fetchTicker"]>;
+    request: (params: IGetMarketPriceRequest) => Parameters<Exchange["fetchTicker"]>;
     response: (data: Ticker) => IGetMarketPriceResponse;
   };
 
   getCandlesticks: {
-    request: (
-      params: IGetCandlesticksRequest,
-    ) => Parameters<Exchange["fetchOHLCV"]>;
+    request: (params: IGetCandlesticksRequest) => Parameters<Exchange["fetchOHLCV"]>;
     response: (data: OHLCV[]) => ICandlestick[];
   };
 
   getSymbol: {
     request: (params: IGetSymbolInfoRequest) => Parameters<Exchange["market"]>;
-    response: (data: Market) => ISymbolInfo;
+    response: (data: Market, exchangeCode: ExchangeCode) => ISymbolInfo;
   };
 
   getSymbols: {
     // request: (params: never) => void; // no params
-    response: (data: Dictionary<Market>) => ISymbolInfo[];
+    response: (data: Dictionary<Market>, exchangeCode: ExchangeCode) => ISymbolInfo[];
   };
 
   watchOrders: {
-    request: (
-      params: IWatchOrdersRequest,
-    ) => Parameters<Exchange["watchOrders"]>;
+    request: (params: IWatchOrdersRequest) => Parameters<Exchange["watchOrders"]>;
     response: (data: Order[]) => IWatchOrdersResponse;
+  };
+
+  watchCandles: {
+    request: (params: IWatchCandlesRequest) => Parameters<Exchange["watchOHLCV"]>;
+    response: (data: OHLCV[]) => IWatchCandlesResponse;
+  };
+
+  watchTrades: {
+    request: (params: IWatchTradesRequest) => Parameters<Exchange["watchTrades"]>;
+    response: (data: Trade[]) => IWatchTradesResponse;
+  };
+
+  watchOrderbook: {
+    request: (symbol: string) => Parameters<Exchange["watchOrderBook"]>;
+    response: (data: OrderBook) => IOrderbook;
+  };
+
+  watchTicker: {
+    request: (symbol: string) => Parameters<Exchange["watchTicker"]>;
+    response: (data: Ticker) => ITicker;
   };
 };

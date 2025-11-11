@@ -1,42 +1,25 @@
-import type { SmartTrade } from "@opentrader/bot-processor";
-import { OrderStatusEnum } from "@opentrader/types";
+import type { Trade } from "@opentrader/bot-processor";
+import { XOrderStatus } from "@opentrader/types";
 
-export function fulfilledTable(smartTrades: SmartTrade[]) {
+export function fulfilledTable(smartTrades: Trade[]) {
   const rows = smartTrades.flatMap((smartTrade, i) => {
-    const { buy, sell } = smartTrade;
+    const { entryOrder, tpOrder } = smartTrade;
 
-    const isBuy =
-      buy.status === OrderStatusEnum.Placed &&
-      sell.status === OrderStatusEnum.Idle;
-    const isSell =
-      buy.status === OrderStatusEnum.Filled &&
-      sell.status === OrderStatusEnum.Placed;
+    const isBuy = entryOrder.status === XOrderStatus.Placed && (!tpOrder || tpOrder.status === XOrderStatus.Idle);
+    const isSell = entryOrder.status === XOrderStatus.Filled && tpOrder?.status === XOrderStatus.Placed;
 
-    const isBuyFilled =
-      buy.status === OrderStatusEnum.Filled &&
-      sell.status === OrderStatusEnum.Idle;
-    const isSellFilled =
-      buy.status === OrderStatusEnum.Filled &&
-      sell.status === OrderStatusEnum.Filled;
+    const isBuyFilled = entryOrder.status === XOrderStatus.Filled && (!tpOrder || tpOrder.status === XOrderStatus.Idle);
+    const isSellFilled = entryOrder.status === XOrderStatus.Filled && tpOrder?.status === XOrderStatus.Filled;
 
     const prevSmartTrade = smartTrades[i - 1];
     const isCurrent =
-      (isSell && prevSmartTrade?.sell?.status === OrderStatusEnum.Idle) ||
-      (isSellFilled && prevSmartTrade?.sell?.status === OrderStatusEnum.Idle);
+      (isSell && prevSmartTrade?.tpOrder?.status === XOrderStatus.Idle) ||
+      (isSellFilled && prevSmartTrade?.tpOrder?.status === XOrderStatus.Idle);
 
-    const side =
-      isBuy || isBuyFilled
-        ? "buy"
-        : isSell || isSellFilled
-        ? "sell"
-        : "unknown";
+    const side = isBuy || isBuyFilled ? "buy" : isSell || isSellFilled ? "sell" : "unknown";
 
     const price =
-      side === "sell"
-        ? smartTrade.sell.price
-        : side === "buy"
-        ? smartTrade.buy.price
-        : "unknown";
+      side === "sell" ? smartTrade.tpOrder?.price : side === "buy" ? smartTrade.entryOrder.price : "unknown";
 
     const gridLine = {
       stIndex: i,
@@ -44,8 +27,8 @@ export function fulfilledTable(smartTrades: SmartTrade[]) {
       stId: smartTrade.id,
       side,
       price,
-      buy: smartTrade.buy.price,
-      sell: smartTrade.sell.price,
+      buy: smartTrade.entryOrder.price,
+      sell: smartTrade.tpOrder?.price,
       filled: isBuyFilled ? "buy filled" : isSellFilled ? "sell filled" : "",
     };
 
@@ -55,7 +38,7 @@ export function fulfilledTable(smartTrades: SmartTrade[]) {
         ref: "-",
         stId: "-",
         side: "Curr",
-        price: smartTrade.buy.price,
+        price: smartTrade.entryOrder.price,
         buy: "-",
         sell: "-",
         filled: "",

@@ -1,7 +1,7 @@
-import { BotProcessing } from "@opentrader/processing";
-import { BotService } from "#trpc/services/bot.service";
-import type { Context } from "#trpc/utils/context";
-import type { TStartGridBotInputSchema } from "./schema";
+import { eventBus } from "@opentrader/event-bus";
+import { BotService } from "../../../../services/bot.service.js";
+import type { Context } from "../../../../utils/context.js";
+import type { TStartGridBotInputSchema } from "./schema.js";
 
 type Options = {
   ctx: {
@@ -17,12 +17,7 @@ export async function startGridBot({ input }: Options) {
   botService.assertIsNotAlreadyRunning();
   botService.assertIsNotProcessing();
 
-  const botProcessor = new BotProcessing(botService.bot);
-  await botProcessor.processStartCommand();
-
-  await botService.start();
-
-  await botProcessor.placePendingOrders();
+  await eventBus.emit("startBot", botService.bot);
 
   return {
     ok: true,

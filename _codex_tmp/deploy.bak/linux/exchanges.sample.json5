@@ -1,0 +1,24 @@
+// Example exchanges configuration for OpenTraderX
+// Copy to /opt/opentrader/exchanges.json5 and fill in your API credentials.
+// You may define multiple labeled accounts; the "exchange" field in config.json5
+// should match one of the top-level keys here (e.g., "DEFAULT").
+{
+  DEFAULT: {
+    // One of: OKX, BYBIT, BINANCE, KRAKEN, COINBASE, GATEIO, BITGET
+    code: "BYBIT",
+
+    // Human-friendly name for your account
+    name: "Main Bybit",
+
+    // API credentials (create read/trade keys on the exchange)
+    credentials: {
+      apiKey: "YOUR_API_KEY",
+      secret: "YOUR_API_SECRET",
+
+      // Optional fields per-exchange; uncomment if required
+      // password: "YOUR_API_PASSPHRASE",
+      // uid: "YOUR_UID",
+    }
+  }
+}
+

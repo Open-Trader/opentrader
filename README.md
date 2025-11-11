@@ -1,117 +1,169 @@
-# Requirements
+<p align="center">
+  <a href="https://github.com/bludnic/opentrader" title="OpenTrader">
+    <img src=".github/images/logo-dark-rounded.png" alt="OpenTrader logo" width="128" />
+  </a>
+</p>
+
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/bludnic/opentrader/dev.yml)](https://github.com/bludnic/opentrader/actions)
+[![NPM Version](https://img.shields.io/npm/v/opentrader?color=blue)](https://www.npmjs.com/package/opentrader)
+[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/bludnic/opentrader)](https://github.com/bludnic/opentrader/graphs/contributors)
+[![Static Badge](https://img.shields.io/badge/Twitter-black?logo=X&color=white&logoColor=black)](https://x.com/intent/follow?screen_name=OpenTraderLabs)
+[![Static Badge](https://img.shields.io/badge/Discord-white?logo=Discord)](https://discord.gg/RS7y3ffvvG)
+[![Static Badge](https://img.shields.io/badge/Reddit-white?logo=Reddit)](https://www.reddit.com/r/OpenTrader)
+[![Static Badge](https://img.shields.io/badge/Telegram-white?logo=Telegram)](https://t.me/+cJLNxLSjcW83Njgy)
+
+[OpenTrader](https://github.com/bludnic/opentrader) is a self-hosted cryptocurrency trading bot, featuring built-in and highly customizable strategies, integration with technical indicators, high-frequency trading, and cross-exchange trading with support for 100+ exchanges via CCXT.
+
+**Features:**
+
+- **✨ Robust UI**: A user-friendly interface for managing the bots.
+- **🌐 Multiple Exchanges:** Trade across various cryptocurrency exchanges.
+- **📝 Paper Trading**: Test your strategies without risking real money.
+- **📊 Backtesting:** Backtest your strategies using historical data.
+- **⚙️ Easy Installation:** Install effortlessly via NPM.
+
+**Strategies:**
+
+- ☑️ [GRID](packages/bot-templates/src/templates/grid-bot.ts): Make profits from market fluctuations by creating a grid of buy and sell orders.
+- ☑️ [DCA](packages/bot-templates/src/templates/dca.ts): Entry with multiple orders to average the entry price and sell on price swings.
+- ☑️ [RSI](packages/bot-templates/src/templates/rsi.ts): Places orders based on the RSI indicator value.
+- 🛠️ [CUSTOM](https://github.com/Open-Trader/custom-strategy): Build your own strategy in just a few lines of code.
+
+# 💓 Status of the Project
+
+This project is a personal passion, developed in my free time. If you find it useful, please give it a ⭐️. Your support means a lot and motivates me to keep improving the bot. If you'd like to make a [donation](#Donate), see the options below. 💖
+
+# 🍩 Donate
+
+If you find OpenTrader useful and would like to support its development, consider making a donation. Your contributions will help cover the costs of maintaining and improving this project.
+
+**Donate via:**
+
+- **Bitcoin (BTC):** `1LBqWWne1ac455UmUDVF32ozVAhy1HgVXn`
+- **Ethereum (ETH):** `0x60371d49F9Cc7ec7d7e34979D5DD31996B7B43Ff`
+
+Thank you for your support!
+
+# 👋🏻 Join our Community
+
+👥 Connect with developers, request features, and receive support. Join our community on [Discord](https://discord.gg/RS7y3ffvvG).
+
+[![Static Badge](https://img.shields.io/badge/Discord-white?logo=Discord&style=for-the-badge&color=white&logoColor=7289da)](https://discord.gg/RS7y3ffvvG)
+[![Static Badge](https://img.shields.io/badge/Telegram-white?logo=Telegram&style=for-the-badge&color=white)](https://t.me/+cJLNxLSjcW83Njgy)
+[![Static Badge](https://img.shields.io/badge/Reddit-white?logo=Reddit&style=for-the-badge&color=white)](https://www.reddit.com/r/OpenTrader)
+
+🔔 For announcements and updates, follow us on [Twitter](https://twitter.com/intent/follow?screen_name=OpenTraderLabs) and [Telegram](https://t.me/opentrader_pro).
+
+[![Static Badge](https://img.shields.io/badge/Twitter-white?logo=X&style=for-the-badge&color=black)](https://twitter.com/intent/follow?screen_name=OpenTraderLabs)
+[![Static Badge](https://img.shields.io/badge/Telegram-white?logo=Telegram&style=for-the-badge&color=24A1DE&logoColor=white)](https://t.me/opentrader_pro)
+
+# ⚡️ Quick start
+
+Get started with OpenTrader in just a few steps. Follow this quick guide to install, configure, and run your crypto trading bot.
+
+> [!NOTE]
+> OpenTrader requires Node.js v22 or higher. You can check your Node.js version by running `node -v`
+
+## Installation
+
+1. Install OpenTrader globally using npm:
 
 ```bash
-# NodeJS v18 or higher
-$ node -v
-
-# `pnpm` must be installed
-$ pnpm -v
-
-# Install Turborepo globally
-$ pnpm install turbo --global
-
-# Docker (optional)
-$ docker -v
+npm install -g opentrader
 ```
 
-## Environment variables
-
-The project uses a single `.env` file located in the root directory.
-Frameworks like Next.js requires `.env` file to be located in the project dir itself.
-To solve this some apps/packages may contain a symlink to the root `.env`.
-
-1. Create environment file `.env` in the root directory
+2. Set an admin password for later accessing the OpenTrader UI:
 
 ```bash
-$ cp .env.example .env
+opentrader set-password <password>
 ```
 
-2. Replace the `DATABASE_URL` if your URL is different from the actual one.
-
-> 💡 **Tip**: You can run PostgreSQL inside a Docker container with `docker compose up -d database`. See details below.
-
-# Docker (optional)
-
-1. If you want to use PostgreSQL within a Docker container use the following commands:
+3. Start the OpenTrader app
 
 ```bash
-$ docker compose up -d database # start service
-$ docker compose stop database # stop service
+opentrader up
 ```
 
-2. Or, if you are using WebStorm, just open `docker-compose.yml` and click ▶️ near the service name.
+The app will start the RPC server and listen on port 8000.
 
-# Processing app (optional)
+> **Tip**: Use `opentrader up -d` to start the app as a daemon. To stop it, run `opentrader down`.
 
-The `apps/processor` is a separate NodeJS app that synchronizes orders with the Exchange faster by using WebSockets.
+# Usage
 
-Features:
+## UI
 
-- Sync orders statuses with the Exchange by using WebSockets
-- Fallback to REST API by polling every 60s
-- Runs the bot template if any order was filled
-- Place pending orders on the Exchange
-- Async queue (in case two or more orders were filled at the same time)
+The user interface allows managing multiple bots and strategies, viewing backtest results, and monitoring live trading.
 
-The package is optional. If you decide to use it, don't forget to disable the sync orders statuses in the `frontend` app.
-Otherwise, it may end up in an inconsistent bot state when two synchronizers running at the same time.
-For development it's enough to run the `frontend` app.
+![UI Preview](.github/images/ui.png)
 
-# Installation
+You can access the OpenTrader UI on: http://localhost:8000
 
-1. Install dependencies
+## CLI
+
+### Connect an exchange
+
+Copy the `exchanges.sample.json5` file to `exchanges.json5` and add your API keys.
+
+> Available exchanges: OKX, BYBIT, BINANCE, KRAKEN, COINBASE, GATEIO, BITGET
+
+### Choose a strategy
+
+Create the strategy configuration file `config.json5`. We will use the `grid` strategy as an example.
+
+```json5
+{
+  // Grid strategy params
+  settings: {
+    highPrice: 70000, // upper price of the grid
+    lowPrice: 60000, // lower price of the grid
+    gridLevels: 20, // number of grid levels
+    quantityPerGrid: 0.0001, // quantity in base currency per each grid
+  },
+  pair: "BTC/USDT",
+  exchange: "DEFAULT",
+}
+```
+
+> Currently supported strategies: `grid`, `dca`, `rsi`
+
+### Run a backtest
+
+Command: `opentrader backtest <strategy> --from <date> --to <date> -t <timeframe>`
+
+Example running a `grid` strategy on `1h` timeframe.
 
 ```bash
-$ pnpm install
+opentrader backtest grid --from 2024-03-01 --to 2024-06-01 -t 1h
 ```
 
-2. Build `/packages/**`
+> To get more accurate results, use a smaller timeframe, e.g. 1m, however, it will take more time to download OHLC data from the exchange.
+
+### Running a Live Trading
+
+Command: `opentrader trade <strategy>`
+
+Example running a live trading with `grid` strategy.
 
 ```bash
-$ turbo run build --filter='./packages/*'
+opentrader trade grid
 ```
 
-3. Run db migrations
+> To stop the live trading, run `opentrader stop`
 
-```bash
-$ turbo run prisma:migrate
-```
+# Project structure
 
-4. Seed the database
+- Strategies dir: [packages/bot-templates](/packages/bot-templates/src/templates)
+- Indicators: [packages/indicators](/packages/indicators/src/indicators)
+- Exchange connectors: [packages/exchanges](/packages/exchanges/src/exchanges)
 
-```bash
-$ turbo run prisma:seed
-```
+# 🪪 License
 
-> ⚠️ **Note**: Due to that fact that packages doesn't have a `dev` server itself, the `build` command is mandatory on first run.
->
-> If you made changes inside a package, don't forget to run `build` command again.
+Licensed under the [Apache 2.0](http://www.apache.org/licenses/LICENSE-2.0) License. See the [LICENSE](LICENSE) file for more information.
 
-# Development
+# Linux Deployment
 
-**Option 1**: Runs both `frontend` and `processor` apps in a single terminal
+For a ready-to-use systemd unit and Nginx TLS proxy example (listening on port 9966), see `deploy/linux/README.md`.
 
-```bash
-$ turbo run dev
-```
+# Disclaimer
 
-**Option 2**: Run each app in a separate terminal
-
-First Terminal
-
-```bash
-$ cd apps/frontend
-$ pnpm run dev
-```
-
-Second Terminal
-
-```bash
-$ cd apps/processor
-$ pnpm run dev
-```
-
-# Apps
-
-- Frontend: http://localhost:3000
-- Processor: http://localhost:4000
+This software is for educational purposes only. USE THE SOFTWARE AT YOUR OWN RISK. THE AUTHORS AND ALL AFFILIATES ASSUME NO RESPONSIBILITY FOR YOUR TRADING RESULTS. Do not risk money that you are afraid to lose. There might be bugs in the code - this software DOES NOT come with ANY warranty.

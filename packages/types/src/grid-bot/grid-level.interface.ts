@@ -1,14 +1,14 @@
-import type { OrderStatusEnum } from "../smart-trade";
+import { XOrderStatus } from "../common/index.js";
 
 export interface IGridBotLevel {
   buy: {
     price: number;
-    status: OrderStatusEnum;
+    status: XOrderStatus;
     quantity: number;
   };
   sell: {
     price: number;
-    status: OrderStatusEnum;
+    status: XOrderStatus;
     quantity: number;
   };
 }

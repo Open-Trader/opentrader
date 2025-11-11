@@ -1,7 +1,7 @@
 import type { SmartTradeEntity_Order_Order } from "@opentrader/db";
 import { toSmartTradeEntity, xprisma } from "@opentrader/db";
-import type { Context } from "#trpc/utils/context";
-import type { TGetActiveSmartTradesInputSchema } from "./schema";
+import type { Context } from "../../../../utils/context.js";
+import type { TGetActiveSmartTradesInputSchema } from "./schema.js";
 
 type Options = {
   ctx: {
@@ -14,6 +14,8 @@ export async function getActiveSmartTrades({ ctx, input }: Options) {
   const smartTrades = await xprisma.smartTrade.findMany({
     where: {
       type: "Trade",
+      entryType: "Order",
+      takeProfitType: "Order",
       owner: {
         id: ctx.user.id,
       },

@@ -1,7 +1,7 @@
-import { BotProcessing } from "@opentrader/processing";
-import { BotService } from "#trpc/services/bot.service";
-import type { Context } from "#trpc/utils/context";
-import type { TStopGridBotInputSchema } from "./schema";
+import { eventBus } from "@opentrader/event-bus";
+import { BotService } from "../../../../services/bot.service.js";
+import type { Context } from "../../../../utils/context.js";
+import type { TStopGridBotInputSchema } from "./schema.js";
 
 type Options = {
   ctx: {
@@ -15,12 +15,8 @@ export async function stopGridBot({ input }: Options) {
 
   const botService = await BotService.fromId(botId);
   botService.assertIsNotAlreadyStopped();
-  botService.assertIsNotProcessing();
 
-  const botProcessor = new BotProcessing(botService.bot);
-  await botProcessor.processStopCommand();
-
-  await botService.stop();
+  await eventBus.emit("stopBot", botService.bot);
 
   return {
     ok: true,

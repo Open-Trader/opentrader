@@ -1,9 +1,6 @@
-import type { Dictionary, Exchange, Market } from "ccxt";
-import type { ExchangeCode } from "@opentrader/types";
+import type { Dictionary, Market } from "ccxt";
+import type { IExchange } from "../exchange.interface.js";
 
 export interface ICacheProvider {
-  getMarkets: (
-    exchangeCode: ExchangeCode,
-    ccxtExchange: Exchange,
-  ) => Promise<Dictionary<Market>>;
+  getMarkets: (exchange: IExchange) => Promise<Dictionary<Market>>;
 }
