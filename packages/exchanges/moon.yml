@@ -1,0 +1,7 @@
+tasks:
+  lint:
+    command: oxlint
+  lint-fix:
+    command: oxlint --fix
+  typecheck:
+    command: tsc --noEmit

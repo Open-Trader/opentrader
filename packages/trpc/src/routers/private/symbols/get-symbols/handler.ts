@@ -1,6 +1,6 @@
 import { exchangeProvider } from "@opentrader/exchanges";
-import type { Context } from "#trpc/utils/context";
-import type { TGetSymbolsInputSchema } from "./schema";
+import type { Context } from "../../../../utils/context.js";
+import type { TGetSymbolsInputSchema } from "./schema.js";
 
 type Options = {
   ctx: Context;
@@ -8,8 +8,8 @@ type Options = {
 };
 
 export async function getSymbols(opts: Options) {
-  const { input: exchangeCode } = opts;
-  const exchangeService = exchangeProvider.fromCode(exchangeCode);
+  const { input } = opts;
+  const exchangeService = exchangeProvider.fromCode(input.exchangeCode, input.isDemoAccount);
 
   const symbols = await exchangeService.getSymbols();
 

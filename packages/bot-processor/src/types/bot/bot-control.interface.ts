@@ -1,30 +1,17 @@
-import type { UseSmartTradePayload } from "../../effects/common/types/use-smart-trade-effect";
-import type { IStore } from "../store/store.interface";
-import type { SmartTrade } from "../smart-trade/smart-trade.type";
-import type { IBotConfiguration } from "./bot-configuration.interface";
+import type { IExchange } from "@opentrader/exchanges";
+import { Trade, CreateTrade } from "../trade/index.js";
 
-export interface IBotControl<T extends IBotConfiguration> {
-  store: IStore;
-  bot: T;
-
+export interface IBotControl {
   /**
    * Stop bot
    */
   stop: () => Promise<void>;
-
-  getSmartTrade: (ref: string) => Promise<SmartTrade | null>;
-
-  createSmartTrade: (
-    ref: string,
-    payload: UseSmartTradePayload,
-  ) => Promise<SmartTrade>;
-
-  getOrCreateSmartTrade: (
-    ref: string,
-    payload: UseSmartTradePayload,
-  ) => Promise<SmartTrade>;
-
-  replaceSmartTrade: (ref: string, payload: SmartTrade) => Promise<SmartTrade>;
-
+  getSmartTrade: (ref: string) => Promise<Trade | null>;
+  updateSmartTrade: (ref: string, payload: Pick<CreateTrade, "tp">) => Promise<Trade | null>;
+  createSmartTrade: (ref: string, payload: CreateTrade) => Promise<Trade>;
+  getOrCreateSmartTrade: (ref: string, payload: CreateTrade) => Promise<Trade>;
+  replaceSmartTrade: (ref: string, payload: Trade) => Promise<Trade>;
   cancelSmartTrade: (ref: string) => Promise<boolean>;
+  getOpenTrades: () => Promise<Trade[]>;
+  getExchange: (label: string) => Promise<IExchange | null>;
 }

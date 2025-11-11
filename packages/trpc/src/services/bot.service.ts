@@ -1,9 +1,9 @@
-import type { TBot } from "@opentrader/db";
+import type { TBotWithExchangeAccount } from "@opentrader/db";
 import { xprisma } from "@opentrader/db";
 import { TRPCError } from "@trpc/server";
 
 export class BotService {
-  constructor(public bot: TBot) {}
+  constructor(public bot: TBotWithExchangeAccount) {}
 
   static async fromId(id: number) {
     const bot = await xprisma.bot.custom.findUniqueOrThrow({
@@ -75,7 +75,7 @@ export class BotService {
   assertIsNotAlreadyRunning() {
     if (this.bot.enabled) {
       throw new TRPCError({
-        message: "Bot already running",
+        message: "Bot already running. Please stop the bot first.",
         code: "CONFLICT",
       });
     }
@@ -90,6 +90,9 @@ export class BotService {
     }
   }
 
+  /**
+   * @deprecated
+   */
   assertIsNotProcessing() {
     if (this.bot.processing) {
       throw new TRPCError({

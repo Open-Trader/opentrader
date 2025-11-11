@@ -1,8 +1,8 @@
-import { exchangeProvider } from "@opentrader/exchanges";
+import { exchangeProvider, IExchange } from "@opentrader/exchanges";
 import { decomposeSymbolId } from "@opentrader/tools";
 import type { ExchangeCode } from "@opentrader/types";
-import type { Context } from "#trpc/utils/context";
-import type { TGetGridBotFormOptionsInputSchema } from "./schema";
+import type { Context } from "../../../../utils/context.js";
+import type { TGetGridBotFormOptionsInputSchema } from "./schema.js";
 
 type Options = {
   ctx: {
@@ -36,12 +36,7 @@ type Options = {
 //   return { lowestCandlestick, highestCandlestick };
 // }
 
-async function calcHighLowPrice(
-  exchangeCode: ExchangeCode,
-  currencyPair: string,
-) {
-  const exchange = exchangeProvider.fromCode(exchangeCode);
-
+async function calcHighLowPrice(exchange: IExchange, currencyPair: string) {
   const { price } = await exchange.getMarketPrice({
     symbol: currencyPair,
   });
@@ -53,13 +48,11 @@ async function calcHighLowPrice(
 }
 
 export async function getFormOptions({ input }: Options) {
-  const { symbolId } = input;
+  const { symbolId, isDemoAccount } = input;
   const { exchangeCode, currencyPairSymbol } = decomposeSymbolId(symbolId);
 
-  const { highPrice, lowPrice } = await calcHighLowPrice(
-    exchangeCode,
-    currencyPairSymbol,
-  );
+  const exchange = exchangeProvider.fromCode(exchangeCode, isDemoAccount);
+  const { highPrice, lowPrice } = await calcHighLowPrice(exchange, currencyPairSymbol);
 
   return {
     highPrice,

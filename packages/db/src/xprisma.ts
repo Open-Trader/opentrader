@@ -1,11 +1,13 @@
 import { PrismaClient } from "@prisma/client";
-import { gridBotModel } from "./extension/models/grid-bot.model";
-import { orderModel } from "./extension/models/order.model";
-import { smartTradeModel } from "./extension/models/smart-trade.model";
-import { customBotModel } from "./extension/models/custom-bot.model";
+import { MarketData, StrategyAction, StrategyError, StrategyEventType } from "@opentrader/types";
+import { dcaBotModel } from "./extension/models/dca-bot.model.js";
+import { gridBotModel } from "./extension/models/grid-bot.model.js";
+import { orderModel } from "./extension/models/order.model.js";
+import { smartTradeModel } from "./extension/models/smart-trade.model.js";
+import { customBotModel } from "./extension/models/custom-bot.model.js";
 
 function newPrismaClientInstance() {
-  console.log("❕ DB: Created new instance of PrismaClient");
+  // console.log("❕ DB: Created new instance of PrismaClient");
   return new PrismaClient();
 }
 
@@ -21,6 +23,7 @@ const xprismaClient = prismaClient.$extends({
   model: {
     bot: {
       grid: gridBotModel(prismaClient),
+      dca: dcaBotModel(prismaClient),
       custom: customBotModel(prismaClient),
 
       /**
@@ -33,6 +36,43 @@ const xprismaClient = prismaClient.$extends({
           },
           data: {
             processing: value,
+          },
+        });
+      },
+      async updateState(state: object, botId: number) {
+        return prismaClient.bot.update({
+          where: {
+            id: botId,
+          },
+          data: {
+            state: JSON.stringify(state),
+          },
+        });
+      },
+    },
+    botLog: {
+      async log(params: {
+        startedAt: Date;
+        endedAt: Date;
+        botId: number;
+        action: StrategyAction;
+        triggerEventType?: StrategyEventType;
+        context?: MarketData;
+        error?: StrategyError;
+      }) {
+        return prismaClient.botLog.create({
+          data: {
+            action: params.action,
+            triggerEventType: params.triggerEventType,
+            context: JSON.stringify(params.context),
+            error: JSON.stringify(params.error),
+            startedAt: params.startedAt,
+            endedAt: params.endedAt,
+            bot: {
+              connect: {
+                id: params.botId,
+              },
+            },
           },
         });
       },
@@ -49,6 +89,7 @@ const xprismaClient = prismaClient.$extends({
           secretKey: true,
           password: true,
           isDemoAccount: true,
+          isPaperAccount: true,
         },
         compute(exchangeAccount) {
           return {
@@ -57,6 +98,7 @@ const xprismaClient = prismaClient.$extends({
             secretKey: exchangeAccount.secretKey,
             password: exchangeAccount.password,
             isDemoAccount: exchangeAccount.isDemoAccount,
+            isPaperAccount: exchangeAccount.isPaperAccount,
           };
         },
       },

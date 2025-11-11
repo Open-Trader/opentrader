@@ -1,14 +1,13 @@
-import type { UseSmartTradePayload } from "../../effects/common/types/use-smart-trade-effect";
-import type { SmartTrade } from "../smart-trade/smart-trade.type";
+import type { IExchange } from "@opentrader/exchanges";
+import { Trade, CreateTrade } from "../trade/index.js";
 
 export interface IStore {
   stopBot: (botId: number) => Promise<void>;
-  getSmartTrade: (ref: string, botId: number) => Promise<SmartTrade | null>;
-  createSmartTrade: (
-    ref: string,
-    payload: UseSmartTradePayload,
-    botId: number,
-  ) => Promise<SmartTrade>;
+  getSmartTrade: (ref: string, botId: number) => Promise<Trade | null>;
+  createSmartTrade: (ref: string, payload: CreateTrade, botId: number) => Promise<Trade>;
+
+  // @todo rename to addTp
+  updateSmartTrade: (ref: string, payload: Pick<CreateTrade, "tp">, botId: number) => Promise<Trade | null>;
 
   /**
    * If `true` then SmartTrade was canceled with success.
@@ -16,4 +15,8 @@ export interface IStore {
    * @param botId - Bot ID
    */
   cancelSmartTrade: (ref: string, botId: number) => Promise<boolean>;
+
+  getOpenTrades: (botId: number) => Promise<Trade[]>;
+
+  getExchange: (label: string) => Promise<IExchange | null>;
 }

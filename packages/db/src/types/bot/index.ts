@@ -1,2 +1,2 @@
-export * from "./bot-settings.schema";
-export * from "./bot.schema";
+export * from "./bot.schema.js";
+export * from "./bot-with-exchange-account.js";

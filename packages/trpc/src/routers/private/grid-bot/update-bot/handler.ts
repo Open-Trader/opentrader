@@ -1,6 +1,7 @@
 import { xprisma } from "@opentrader/db";
-import type { Context } from "#trpc/utils/context";
-import type { TUpdateGridBotInputSchema } from "./schema";
+import { BotService } from "../../../../services/bot.service.js";
+import type { Context } from "../../../../utils/context.js";
+import type { TUpdateGridBotInputSchema } from "./schema.js";
 
 type Options = {
   ctx: {
@@ -12,6 +13,10 @@ type Options = {
 export async function updateGridBot({ ctx, input }: Options) {
   const { botId, data } = input;
 
+  const botService = await BotService.fromId(botId);
+  botService.assertIsNotAlreadyRunning();
+  botService.assertIsNotProcessing();
+
   const bot = await xprisma.bot.grid.update({
     where: {
       id: botId,
@@ -19,7 +24,10 @@ export async function updateGridBot({ ctx, input }: Options) {
         id: ctx.user.id,
       },
     },
-    data,
+    data: {
+      ...data,
+      settings: JSON.stringify(data.settings),
+    },
   });
 
   return bot;

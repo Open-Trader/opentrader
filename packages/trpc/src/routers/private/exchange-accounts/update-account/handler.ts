@@ -1,6 +1,8 @@
 import { xprisma } from "@opentrader/db";
-import type { Context } from "#trpc/utils/context";
-import type { TUpdateExchangeAccountInputSchema } from "./schema";
+import { checkExchangeCredentials } from "../../../../utils/exchange-account.js";
+import type { Context } from "../../../../utils/context.js";
+import type { TUpdateExchangeAccountInputSchema } from "./schema.js";
+import { eventBus } from "@opentrader/event-bus";
 
 type Options = {
   ctx: {
@@ -10,12 +12,26 @@ type Options = {
 };
 
 export async function updateExchangeAccount({ input, ctx }: Options) {
-  const exchangeAccount = await xprisma.exchangeAccount.update({
+  let exchangeAccount = await xprisma.exchangeAccount.update({
     where: {
       id: input.id,
       ownerId: ctx.user.id,
     },
     data: input.body,
+  });
+
+  // It's important to trigger the event before checking the credentials
+  // to invalidate the cache of ExchangeProvider.
+  await eventBus.emit("onExchangeAccountUpdated", exchangeAccount);
+
+  const { valid } = await checkExchangeCredentials(exchangeAccount);
+  exchangeAccount = await xprisma.exchangeAccount.update({
+    where: {
+      id: exchangeAccount.id,
+    },
+    data: {
+      expired: !valid,
+    },
   });
 
   return exchangeAccount;

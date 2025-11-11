@@ -1,0 +1,37 @@
+name: OpenTraderX Build (pnpm, frozen lockfile)
+
+on:
+  push:
+    branches:
+      - integrate-open-trader
+      - main
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.12.1
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: |
+          if [ -f package.json ]; then pnpm build; else echo "No package.json in repo root; skipping build"; fi

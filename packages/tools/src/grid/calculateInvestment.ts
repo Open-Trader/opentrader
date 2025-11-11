@@ -1,6 +1,5 @@
 import big from "big.js";
-import type { IGridBotLevel } from "@opentrader/types";
-import { OrderStatusEnum } from "@opentrader/types";
+import { IGridBotLevel, XOrderStatus } from '@opentrader/types';
 
 export type CalculateInvestmentResult = {
   baseCurrencyAmount: number;
@@ -18,8 +17,8 @@ export function calculateInvestment(
 ): CalculateInvestmentResult {
   const baseCurrencyAmount = gridLevels.reduce((amount, gridLevel) => {
     const isSellWaiting =
-      gridLevel.buy.status === OrderStatusEnum.Filled &&
-      gridLevel.sell.status === OrderStatusEnum.Idle;
+      gridLevel.buy.status === XOrderStatus.Filled &&
+      gridLevel.sell.status === XOrderStatus.Idle;
 
     if (isSellWaiting) {
       return big(amount).plus(gridLevel.sell.quantity).toNumber();
@@ -30,8 +29,8 @@ export function calculateInvestment(
 
   const quoteCurrencyAmount = gridLevels.reduce((amount, gridLevel) => {
     const isBuyWaiting =
-      gridLevel.buy.status === OrderStatusEnum.Idle &&
-      gridLevel.sell.status === OrderStatusEnum.Idle;
+      gridLevel.buy.status === XOrderStatus.Idle &&
+      gridLevel.sell.status === XOrderStatus.Idle;
 
     if (isBuyWaiting) {
       const quoteAmountPerGrid = big(gridLevel.buy.quantity).times(

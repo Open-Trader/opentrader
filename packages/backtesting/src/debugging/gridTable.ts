@@ -1,29 +1,20 @@
-import type { SmartTrade } from "@opentrader/bot-processor";
-import { OrderStatusEnum } from "@opentrader/types";
+import type { Trade } from "@opentrader/bot-processor";
+import { XOrderStatus } from "@opentrader/types";
 
-export function gridTable(smartTrades: SmartTrade[]) {
+export function gridTable(smartTrades: Trade[]) {
   const rows = smartTrades.flatMap((smartTrade, i) => {
-    const { buy, sell } = smartTrade;
+    const { entryOrder, tpOrder } = smartTrade;
 
-    const isBuy =
-      buy.status === OrderStatusEnum.Placed &&
-      sell.status === OrderStatusEnum.Idle;
-    const isSell =
-      buy.status === OrderStatusEnum.Filled &&
-      sell.status === OrderStatusEnum.Placed;
+    const isBuy = entryOrder.status === XOrderStatus.Placed && (!tpOrder || tpOrder.status === XOrderStatus.Idle);
+    const isSell = entryOrder.status === XOrderStatus.Filled && tpOrder?.status === XOrderStatus.Placed;
 
     const prevSmartTrade = smartTrades[i - 1];
-    const isCurrent =
-      isSell && prevSmartTrade?.sell?.status === OrderStatusEnum.Idle;
+    const isCurrent = isSell && prevSmartTrade?.tpOrder?.status === XOrderStatus.Idle;
 
     const side = isBuy ? "buy" : isSell ? "sell" : "unknown";
 
     const price =
-      side === "sell"
-        ? smartTrade.sell.price
-        : side === "buy"
-        ? smartTrade.buy.price
-        : "unknown";
+      side === "sell" ? smartTrade.tpOrder?.price : side === "buy" ? smartTrade.entryOrder.price : "unknown";
 
     const gridLine = {
       stIndex: i,
@@ -31,8 +22,8 @@ export function gridTable(smartTrades: SmartTrade[]) {
       stId: smartTrade.id,
       side,
       price,
-      buy: smartTrade.buy.price,
-      sell: smartTrade.sell.price,
+      buy: smartTrade.entryOrder.price,
+      sell: smartTrade.tpOrder?.price,
     };
 
     if (isCurrent) {
@@ -41,7 +32,7 @@ export function gridTable(smartTrades: SmartTrade[]) {
         ref: "-",
         stId: "-",
         side: "Curr",
-        price: smartTrade.buy.price,
+        price: smartTrade.entryOrder.price,
         buy: "-",
         sell: "-",
         filled: "",

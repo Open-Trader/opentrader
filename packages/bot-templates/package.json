@@ -1,27 +1,30 @@
 {
   "name": "@opentrader/bot-templates",
-  "version": "0.0.1",
+  "version": "0.0.0",
+  "private": true,
   "description": "",
+  "type": "module",
   "main": "src/index.ts",
   "types": "src/index.ts",
-  "scripts": {
-    "build": "tsc",
-    "lint": "eslint . --quiet",
-    "lint:fix": "eslint . --fix"
+  "exports": {
+    ".": "./src/index.ts",
+    "./server": "./src/server/index.ts",
+    "./dist": "./src/index.ts"
   },
   "author": "bludnic",
+  "license": "Apache-2.0",
   "devDependencies": {
-    "@opentrader/eslint-config": "workspace:*",
     "@opentrader/tsconfig": "workspace:*",
     "@opentrader/types": "workspace:*",
-    "@types/node": "^20.10.0",
-    "eslint": "8.54.0",
-    "typescript": "^5.2.2"
+    "@types/node": "^22.10.2",
+    "typescript": "5.8.3",
+    "vitest": "^3.2.3"
   },
   "dependencies": {
     "@opentrader/bot-processor": "workspace:*",
     "@opentrader/exchanges": "workspace:*",
-    "@opentrader/indicators": "workspace:*",
-    "@opentrader/tools": "workspace:*"
+    "@opentrader/logger": "workspace:*",
+    "@opentrader/tools": "workspace:*",
+    "zod": "3.25.65"
   }
 }

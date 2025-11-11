@@ -1,7 +1,10 @@
+import { findStrategy } from "@opentrader/bot-templates/server";
 import { TRPCError } from "@trpc/server";
 import { xprisma } from "@opentrader/db";
-import type { Context } from "#trpc/utils/context";
-import type { TCreateBotInputSchema } from "./schema";
+import { eventBus } from "@opentrader/event-bus";
+import { XBotType } from "@opentrader/types";
+import type { Context } from "../../../../utils/context.js";
+import type { TCreateBotInputSchema } from "./schema.js";
 
 type Options = {
   ctx: {
@@ -29,10 +32,31 @@ export async function createBot({ ctx, input }: Options) {
     });
   }
 
+  let strategy: ReturnType<typeof findStrategy>;
+  try {
+    strategy = findStrategy(data.template);
+  } catch (err) {
+    throw new TRPCError({
+      message: `Strategy ${data.template} not found`,
+      code: "NOT_FOUND",
+    });
+  }
+
+  const parsed = strategy.strategyFn.schema.safeParse(data.settings);
+  if (!parsed.success) {
+    throw new TRPCError({
+      message: `Invalid strategy params: ${parsed.error.message}`,
+      code: "PARSE_ERROR",
+    });
+  }
+
+  const botType = strategy.strategyFn.botType || XBotType.Bot;
+
   const bot = await xprisma.bot.custom.create({
     data: {
       ...data,
-      type: "Bot",
+      settings: JSON.stringify(data.settings),
+      type: botType in XBotType ? botType : XBotType.Bot,
       exchangeAccount: {
         connect: {
           id: exchangeAccount.id,
@@ -44,7 +68,10 @@ export async function createBot({ ctx, input }: Options) {
         },
       },
     },
+    include: { exchangeAccount: true },
   });
+
+  await eventBus.emit("onBotCreated", bot);
 
   return bot;
 }
