@@ -38,7 +38,7 @@
     "@types/express": "^4.17.21",
     "@types/node": "^22.10.2",
     "dts-bundle-generator": "^9.5.1",
-    "esbuild": "^0.23.1",
+    "esbuild": "^0.27.2",
     "rimraf": "^6.0.1",
     "ts-loader": "^9.5.1",
     "ts-node": "10.9.2",
