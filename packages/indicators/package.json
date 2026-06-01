@@ -14,7 +14,7 @@
     "@types/node": "^22.10.2",
     "ts-node": "10.9.2",
     "typescript": "5.8.3",
-    "vitest": "^3.2.3"
+    "vitest": "^4.1.8"
   },
   "dependencies": {
     "technicalindicators": "^3.1.0"
