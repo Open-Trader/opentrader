@@ -27,17 +27,28 @@ async function readPasswordFile(filePath) {
   }
 }
 
+// Commands that don't require an existing password file
+// (otherwise `set-password` could never run on a fresh install)
+const noPasswordCommands = ["set-password"];
+const command = process.argv[2];
+const skipPasswordCheck = command && noPasswordCommands.includes(command);
+
 // Main function to run the script
 async function main() {
-  const adminPassword = await readPasswordFile(passwordFilePath);
-
   // Set environment variables
   const env = {
     ...process.env,
-    ADMIN_PASSWORD: adminPassword,
     DATABASE_URL: `file:${dbFilePath}`,
     CUSTOM_STRATEGIES_PATH: process.env.CUSTOM_STRATEGIES_PATH,
   };
+
+  let adminPassword = null;
+  if (!skipPasswordCheck) {
+    adminPassword = await readPasswordFile(passwordFilePath);
+  }
+  if (adminPassword !== null) {
+    env.ADMIN_PASSWORD = adminPassword;
+  }
 
   // Run the Node.js script
   const args = [`${__dirname}/../dist/cli.mjs`, ...process.argv.slice(2)];
